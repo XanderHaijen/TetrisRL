@@ -2,7 +2,10 @@
 # http://lusob.com
 # Released under a "Simplified BSD" license
 
-import random, time, pygame, sys
+import random
+import time
+import sys
+import pygame
 from pygame.locals import *
 
 FPS = 25
