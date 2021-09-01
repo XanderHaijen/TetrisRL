@@ -15,17 +15,20 @@ model = A2C("MlpPolicy", env, verbose=1)
 
 model.load(model_path)
 
-NB_EPISODES = 10
+NB_EPISODES = 2
 for episode in range(1, NB_EPISODES + 1):
     observations = env.reset()
     done = False
     score = 0
 
+    j = 0
     while not done:
+        j += 1
         env.render()
         action = env.action_space.sample()
         obs, reward, done, info = env.step(action)
+        print(f"Reward = {reward}")
         time.sleep(0.1)
-        score += reward
+        reward += reward
     print('Episode:{} Score:{}'.format(episode, score))
 env.close()

@@ -11,8 +11,8 @@ class TetrisEnv(gym.Env):
 
     def __init__(self):
         # open up a game state to communicate with emulator
-        self.game_state = game.GameState()
-        self._action_set = self.game_state.getActionSet()
+        self.game_state = game.TetrisGame()
+        self._action_set = self.game_state.get_action_set()
         self.action_space = spaces.Discrete(len(self._action_set))
         self.observation_space = spaces.Box(low=0, high=255, shape=(SCREEN_WIDTH, SCREEN_HEIGHT, 3))
         self.viewer = None
@@ -26,7 +26,7 @@ class TetrisEnv(gym.Env):
         return state, reward, terminal, {}
 
     def get_image(self):
-        return self.game_state.getImage()
+        return self.game_state.get_image()
 
     @property
     def n_actions(self):
