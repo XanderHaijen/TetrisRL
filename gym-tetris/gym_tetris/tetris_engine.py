@@ -20,7 +20,7 @@ MOVEDOWNFREQ = 0.1
 XMARGIN = 0
 TOPMARGIN = 0
 
-#               R    G    B
+#         R    G    B
 WHITE = (255, 255, 255)
 GRAY = (185, 185, 185)
 BLACK = (0, 0, 0)
@@ -369,7 +369,7 @@ class TetrisGame:
 
     def get_holes_diff(self):
         """
-        :return: h_avg^t-h_avg^(t+1)
+        :return: holes^t-holes^(t+1)
         """
         nb_holes = 0
 
@@ -387,7 +387,7 @@ class TetrisGame:
 
     def get_avg_height_diff(self):
         """
-        :return: holes^t-holes^(t+1)
+        :return: h_avg^t-h_avg^(t+1)
         """
         old_height = self.avg_height
         total_height = 0

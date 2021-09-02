@@ -14,9 +14,9 @@ class TetrisEnv(gym.Env):
         self.game_state = game.TetrisGame()
         self._action_set = self.game_state.get_action_set()
         self.action_space = spaces.Discrete(len(self._action_set))
-        self.observation_space = spaces.Box(low=0, high=255, shape=(SCREEN_WIDTH, SCREEN_HEIGHT, 3))
+        # self.observation_space = spaces.Box(low=0, high=255, shape=(SCREEN_WIDTH, SCREEN_HEIGHT, 3))
+        self.observation_space = spaces.Box(low=-3, high=3, shape=(9,), dtype=int)
         self.viewer = None
-
 
     def step(self, a):
         self._action_set = np.zeros([len(self._action_set)])
@@ -36,8 +36,9 @@ class TetrisEnv(gym.Env):
     def reset(self):
         do_nothing = np.zeros(len(self._action_set))
         do_nothing[0] = 1
-        self.observation_space = spaces.Box(low=0, high=255, shape=(SCREEN_WIDTH, SCREEN_HEIGHT, 3))
-        state, _, _= self.game_state.frame_step(do_nothing)
+        # self.observation_space = spaces.Box(low=0, high=255, shape=(SCREEN_WIDTH, SCREEN_HEIGHT, 3))
+        self.observation_space = spaces.Box(low=-3, high=3, shape=(9,), dtype=int)
+        state, _, _ = self.game_state.frame_step(do_nothing)
         return state
 
     def render(self, mode='human', close=False):
