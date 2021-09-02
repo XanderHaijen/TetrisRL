@@ -56,3 +56,24 @@ class TetrisEnv(gym.Env):
                 self.viewer = rendering.SimpleImageViewer()
             self.viewer.imshow(img)
 
+    def get_encoded_state(self, low: int = -3, high: int = 3):
+        """
+        Encodes the state space from the 10-by-20 (for o normal Tetris game) board to an integer array of size 9 by
+        only noting the height differences between adjacent columns. If this difference is greater than :param high or
+        smaller than :param low, the value is equal to :param high or :param low respectively.
+
+        :param low: the lowest number which can be stored
+        :param high: the highest number which can be stored
+        :return: a numpy array of size board_width - 1 containing h_(i+1)-h_i in the i'th spot.
+        """
+        board_width = self.game_state.get_board_width()
+        state = np.zeros(board_width - 1, dtype=int)
+        for i in range(board_width - 1):
+            height_diff = self.game_state.get_column_height(i + 1) - self.game_state.get_column_height(i)
+            if height_diff < low:
+                height_diff = low
+            elif height_diff > high:
+                height_diff = high
+            state[i] = height_diff
+
+        return state

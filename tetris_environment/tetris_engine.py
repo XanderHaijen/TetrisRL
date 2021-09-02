@@ -190,6 +190,9 @@ class TetrisGame:
         self.fallingPiece = self.get_new_piece()
         self.nextPiece = self.get_new_piece()
 
+        self.board_width = BOARDWIDTH
+        self.board_height = BOARDHEIGHT
+
         self.frame_step([1, 0, 0, 0, 0, 0])
 
         pygame.display.update()
@@ -221,6 +224,14 @@ class TetrisGame:
         self.frame_step([1, 0, 0, 0, 0, 0])
 
         pygame.display.update()
+
+    @property
+    def get_board_width(self):
+        return self.board_width
+
+    @property
+    def get_board_height(self):
+        return self.board_height
 
     def frame_step(self, input):
         self.movingLeft = False
