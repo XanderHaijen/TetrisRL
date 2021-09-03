@@ -237,11 +237,13 @@ class TetrisGame:
         self.movingLeft = False
         self.movingRight = False
 
+        new_piece = False
         terminal = False
 
         # none is 100000, left is 010000, up is 001000, right is 000100, space is 000010, q is 000001
         if self.fallingPiece == None:
             # No falling piece in play, so start a new piece at the top
+            new_piece = True
             self.fallingPiece = self.nextPiece
             self.nextPiece = self.get_new_piece()
             self.lastFallTime = time.time()  # reset self.lastFallTime
@@ -252,7 +254,8 @@ class TetrisGame:
 
                 self.reinit()
                 reward = -10  # penalty for game over
-                return image_data, reward, terminal  # can't fit a new piece on the self.board, so game over
+                data = {"score": self.score, "lines_cleared": self.total_lines, "new_piece": new_piece}
+                return image_data, reward, terminal, data  # can't fit a new piece on the self.board, so game over
 
         # moving the piece sideways
         if (input[1] == 1) and self.is_valid_position(adjX=-1):
@@ -336,6 +339,8 @@ class TetrisGame:
             # piece did not land, just move the piece down
             self.fallingPiece['y'] += 1
 
+        data = {"score": self.score, "lines_cleared": self.total_lines, "new_piece": new_piece}
+
         # drawing everything on the screen
         DISPLAYSURF.fill(BGCOLOR)
         self.draw_board()
@@ -351,7 +356,7 @@ class TetrisGame:
 
         image_data = pygame.surfarray.array3d(pygame.display.get_surface())
         reward = self.get_reward()
-        return image_data, reward, terminal
+        return image_data, reward, terminal, data
 
     def get_image(self):
         image_data = pygame.surfarray.array3d(pygame.transform.rotate(pygame.display.get_surface(), 90))
