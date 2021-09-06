@@ -1,4 +1,7 @@
 from abc import abstractmethod
+from typing import Any
+import pickle
+from gym import Env
 
 
 class Algorithm:
@@ -18,8 +21,11 @@ class Algorithm:
         """
         pass
 
-    def save(self, filepath: str):
+    @abstractmethod
+    def save(self, filename: str):
         pass
 
-    def load(self, filepath: str):
+    @staticmethod
+    @abstractmethod
+    def load(filename: str):
         pass

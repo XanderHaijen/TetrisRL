@@ -7,9 +7,10 @@ from Algorithms.Algorithm import Algorithm
 from gym import Env
 
 
-def evaluate_policy(algorithm: Algorithm, env: Env, nb_episodes: int):
+def evaluate_policy(algorithm: Algorithm, env: Env, nb_episodes: int, render: bool = False) -> pd.DataFrame():
     """
 
+    :param render: if True, the games will be shown on screen
     :param algorithm: of type Algorithm: provides the policy to follow
     :param env: the environment in which to test the provided :param algorithm
     :param nb_episodes: number of evaluation epsiodes
@@ -21,23 +22,30 @@ def evaluate_policy(algorithm: Algorithm, env: Env, nb_episodes: int):
 
     metrics = []
     for episode in range(1, nb_episodes + 1):
-        observations = env.reset()
+        state = env.reset()
         done = False
         nb_pieces = 0
         j = 0
         data = {}
+        total_cleared = 0
         while not done:
             j += 1
-            # env.render()  # only for viewing purposes
-            action = algorithm.predict()
+            if render:  # only for viewing purposes
+                env.render()
+                time.sleep(0.05)
+            action = algorithm.predict(state)
             state, reward, done, data = env.step(action)
             if data["new_piece"]:
                 nb_pieces += 1
+            total_cleared += data["lines_cleared"]
 
         lines_cleared = data.get("lines_cleared", 0)
         score = data.get("score", 0)
         metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": lines_cleared, "Score": score})
 
     metrics_df = pd.DataFrame.from_records(metrics)
+    return metrics_df
+
+
 
 

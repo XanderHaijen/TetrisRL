@@ -227,7 +227,7 @@ class TetrisGame:
 
     @property
     def get_board_width(self):
-        return self.board_width
+        return self.__board_width
 
     @property
     def get_board_height(self):
@@ -339,7 +339,7 @@ class TetrisGame:
             # piece did not land, just move the piece down
             self.fallingPiece['y'] += 1
 
-        data = {"score": self.score, "lines_cleared": self.total_lines, "new_piece": new_piece}
+        data = {"score": self.score, "lines_cleared": cleared, "new_piece": new_piece}
 
         # drawing everything on the screen
         DISPLAYSURF.fill(BGCOLOR)
@@ -358,7 +358,8 @@ class TetrisGame:
         reward = self.get_reward()
         return image_data, reward, terminal, data
 
-    def get_image(self):
+    @staticmethod
+    def get_image():
         image_data = pygame.surfarray.array3d(pygame.transform.rotate(pygame.display.get_surface(), 90))
         return image_data
 
@@ -443,6 +444,7 @@ class TetrisGame:
             if self.board[column_nb][row] != ".":
                 return BOARDHEIGHT - row
         return 0
+
         # Based on:
 
         # for i in range(0, BOARDHEIGHT):
@@ -458,10 +460,10 @@ class TetrisGame:
         """
         Reward consists out of 3 parts:
             1) the difference in average height
-            2) the difference in holes
+            2) the difference in number of holes
             3) the difference in quadratic unevenness
 
-        :ivar: ALPHA, BETA, GAMMA greater than zero
+        :ivar: ALPHA, BETA, GAMMA greater than or equal to zero
         :return: r_(t+1)=α(h_avg^t-h_avg^(t+1) )+β(holes^t-holes^(t+1) )+γ(U^t-U^(t+1) ) where α,β,γ>0
         """
         ALPHA = 1

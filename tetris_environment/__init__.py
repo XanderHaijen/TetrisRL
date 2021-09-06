@@ -1,5 +1,4 @@
 from gym.envs.registration import registry, register, make, spec
-from tetris_env import TetrisEnv
 # Pygame
 # ----------------------------------------
 for game in ['Tetris']:

@@ -2,7 +2,7 @@ import os
 import time
 import pandas as pd
 from stable_baselines3 import PPO
-from tetris_env import TetrisEnv
+from tetris_environment.tetris_env import TetrisEnv
 
 model_path = os.path.join(r"C:\Users\xande\Documents\TetrisNES\gym-tetris\gym_tetris","Training", "Model")
 env = TetrisEnv()

@@ -1,7 +1,7 @@
 import numpy as np
 import gym
 from gym import spaces
-import tetris_engine as game
+from tetris_environment import tetris_engine as game
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 200, 400
 
@@ -22,7 +22,8 @@ class TetrisEnv(gym.Env):
         self._action_set = np.zeros([len(self._action_set)])
         self._action_set[a] = 1
         reward = 0.0
-        state, reward, terminal, observations = self.game_state.frame_step(self._action_set)
+        _, reward, terminal, observations = self.game_state.frame_step(self._action_set)
+        state = self.get_encoded_state()
         return state, reward, terminal, observations
 
     def get_image(self):
@@ -38,7 +39,8 @@ class TetrisEnv(gym.Env):
         do_nothing[0] = 1
         # self.observation_space = spaces.Box(low=0, high=255, shape=(SCREEN_WIDTH, SCREEN_HEIGHT, 3))
         self.observation_space = spaces.Box(low=-3, high=3, shape=(9,), dtype=int)
-        state, _, _, _ = self.game_state.frame_step(do_nothing)
+        self.game_state.frame_step(do_nothing)
+        state = self.get_encoded_state()
         return state
 
     def render(self, mode='human', close=False):
@@ -56,7 +58,7 @@ class TetrisEnv(gym.Env):
                 self.viewer = rendering.SimpleImageViewer()
             self.viewer.imshow(img)
 
-    def get_encoded_state(self, low: int = -3, high: int = 3):
+    def get_encoded_state(self, low: int = -3, high: int = 3) -> tuple:
         """
         Encodes the state space from the 10-by-20 (for a normal Tetris game) board to an integer array of size 9 by
         only noting the height differences between adjacent columns. If this difference is greater than :param high or
@@ -64,10 +66,10 @@ class TetrisEnv(gym.Env):
 
         :param low: the lowest number which can be stored
         :param high: the highest number which can be stored
-        :return: a numpy array of size board_width - 1 containing h_(i+1)-h_i in the i'th spot.
+        :return: a tuple of size board_width - 1 containing h_(i+1)-h_i in the i'th spot.
         """
-        board_width = self.game_state.get_board_width()
-        state = np.zeros(board_width - 1, dtype=int)
+        board_width = self.game_state.board_width
+        state = [0 for _ in range(board_width - 1)]  # np.zeros(board_width - 1, dtype=int)
         for i in range(board_width - 1):
             height_diff = self.game_state.get_column_height(i + 1) - self.game_state.get_column_height(i)
             if height_diff < low:
@@ -76,4 +78,4 @@ class TetrisEnv(gym.Env):
                 height_diff = high
             state[i] = height_diff
 
-        return state
+        return tuple(state)
