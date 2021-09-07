@@ -1,7 +1,10 @@
 import random
+from typing import Callable
+
 from tetris_environment.tetris_env import TetrisEnv
 from Algorithms.Algorithm import Algorithm
 import pickle
+
 
 class SarsaZeroForTetris(Algorithm):
     """
@@ -19,7 +22,7 @@ class SarsaZeroForTetris(Algorithm):
         # the value function is represented by a dict of dicts. State-action pairs are stored as
         # {state: {action: value}}. Non-visited state-action pairs are not stored and their
         # values are considered zero in the beginning.
-        # The size of this dict is thus num_states. Each nested dict has max length nb_actions for each state
+        # The size of this dict is thus num_states. Each nested dict has max length _nb_actions for each state
         if value_function is None:
             value_function = {}
 
@@ -29,22 +32,7 @@ class SarsaZeroForTetris(Algorithm):
         self.alpha = alpha
         self.gamma = gamma
 
-    def epsilon_greedy_action(self, learning_rate, nb_episodes, state):
-        """
-        :param state: the state for which to choose the epsilon greedy action
-        :param nb_episodes: how far into learning is the agent
-        :param learning_rate: a function of the number of episodes which goes towards zero at infinity
-        :return: the action according to the epsilon greedy policy
-        """
-        epsilon = learning_rate(nb_episodes)
-        if random.randrange(0, 1) <= epsilon:
-            action = self.env.action_space.sample()
-            return action
-        else:
-            action = self.predict(state)
-            return action
-
-    def train(self, learning_rate, nb_episodes: int = 1000, start_episode: int = 0) -> None:
+    def train(self, learning_rate: Callable[[int], float], nb_episodes: int = 1000, start_episode: int = 0) -> None:
         """
         Updates the value function according to the Sarsa algorithm (Sutton & Barto, page 155)
         :param learning_rate: = epsilon. A function of the number of episodes which goes towards zero at infinity
@@ -60,13 +48,13 @@ class SarsaZeroForTetris(Algorithm):
             if state not in self.value_function.keys():
                 self.value_function.update({state: {}})
 
-            action = self.epsilon_greedy_action(learning_rate, episode + start_episode, state)
+            action = self._epsilon_greedy_action(learning_rate, episode + start_episode, state)
             done = False
             while not done:
                 old_state = state  # save old state s
                 old_action = action  # save old action a
                 state, reward, done, obs = self.env.step(action)  # new state and action s', a'
-                action = self.epsilon_greedy_action(learning_rate, episode + start_episode, state)
+                action = self._epsilon_greedy_action(learning_rate, episode + start_episode, state)
 
                 # update value function at Q(s,a)
                 value_at_next_state = self.value_function.get(state, {}).get(action, 0)
@@ -76,15 +64,30 @@ class SarsaZeroForTetris(Algorithm):
                     self.value_function.update({old_state: {}})
                 self.value_function[old_state].update({old_action: new_value})
 
-    def nb_actions(self) -> int:
+    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes, state):
+        """
+        :param state: the state for which to choose the epsilon greedy action
+        :param nb_episodes: how far into learning is the agent
+        :param learning_rate: a function of the number of episodes which goes towards zero at infinity
+        :return: the action according to the epsilon greedy policy
+        """
+        epsilon = learning_rate(nb_episodes)
+        if random.random() <= epsilon:
+            action = self.env.action_space.sample()
+            return action
+        else:
+            action = self.predict(state)
+            return action
+
+    def _nb_actions(self) -> int:
         return len(self.env.game_state.get_action_set())
 
     def predict(self, state):
         values_for_state = self.value_function.get(state, {})
-        a_star = self.argmax_dict(values_for_state)  # A_star is the optimal action in state A
+        a_star = self._argmax_dict(values_for_state)  # A_star is the optimal action in state A
         return a_star
 
-    def argmax_dict(self, dc: dict):
+    def _argmax_dict(self, dc: dict):
         """
         Returns the / a key associated with the / a maximum value.
         :param dc:
@@ -92,7 +95,7 @@ class SarsaZeroForTetris(Algorithm):
         """
         if len(dc.keys()) > 0:
             return max(dc.keys(), key=lambda key: dc.get(key, 0))
-        else:
+        else:  # in this case all values are zero, so argmax is the same as a random sample
             return self.env.action_space.sample()
 
     @staticmethod
@@ -101,7 +104,7 @@ class SarsaZeroForTetris(Algorithm):
             alpha, gamma, value_function = pickle.load(f)
         return alpha, gamma, value_function
 
-
+    @staticmethod
     def load(filename: str):
         alpha, gamma, value_function = SarsaZeroForTetris._load_file(filename)
         return SarsaZeroForTetris(alpha=alpha, gamma=gamma, value_function=value_function)
@@ -109,5 +112,3 @@ class SarsaZeroForTetris(Algorithm):
     def save(self, filename: str):
         with open(filename, 'wb') as f:
             pickle.dump((self.alpha, self.gamma, self.value_function), f)
-
-

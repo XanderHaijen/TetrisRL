@@ -1,20 +1,9 @@
 import os
 import time
 import pandas as pd
-from stable_baselines3 import PPO
 from tetris_environment.tetris_env import TetrisEnv
 
-model_path = os.path.join(r"C:\Users\xande\Documents\TetrisNES\gym-tetris\gym_tetris","Training", "Model")
 env = TetrisEnv()
-model = PPO("MlpPolicy", env, verbose=1)
-
-# for learning only: very, very slow
-model.learn(total_timesteps=1000)
-model.save(model_path)
-# del model
-
-# model.load(model_path)
-
 NB_EPISODES = 2
 for episode in range(1, NB_EPISODES + 1):
     observations = env.reset()

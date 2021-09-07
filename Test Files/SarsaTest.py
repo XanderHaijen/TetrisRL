@@ -22,4 +22,4 @@ def render_view():
     Evaluate_policy.evaluate_policy(model, model.env, nb_episodes=20, render=True)
 
 
-render_view()
+model_test()

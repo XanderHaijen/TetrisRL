@@ -346,7 +346,7 @@ class TetrisGame:
         self.draw_board()
         # self.drawStatus()
         # self.drawNextPiece()
-        if self.fallingPiece != None:
+        if self.fallingPiece is not None:
             self.draw_piece(self.fallingPiece)
 
         pygame.display.update()
