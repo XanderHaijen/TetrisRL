@@ -3,7 +3,7 @@ from Evaluation import Evaluate_policy
 from math import log
 
 
-def model_test():
+def sarsa_zero_test():
     model = SarsaZeroForTetris.SarsaZeroForTetris(alpha=0.01, gamma=0.01)
     episodes_trained = 0
     for i in range(3):
@@ -22,4 +22,4 @@ def render_view():
     Evaluate_policy.evaluate_policy(model, model.env, nb_episodes=20, render=True)
 
 
-model_test()
+sarsa_zero_test()
