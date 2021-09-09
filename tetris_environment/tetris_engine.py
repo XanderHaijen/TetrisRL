@@ -431,7 +431,7 @@ class TetrisGame:
             min_ys.append(i)
 
         for i in range(len(min_ys) - 1):
-            bumpiness = abs(min_ys[i] - min_ys[i+1])
+            bumpiness = pow(min_ys[i] - min_ys[i+1], 2)
             total_bumpiness += bumpiness
 
         bumpiness_diff = self.bumpiness - total_bumpiness
@@ -456,7 +456,7 @@ class TetrisGame:
         #     if not blank_row and stack_height is None:
         #         stack_height = BOARDHEIGHT - i
 
-    def get_reward(self):
+    def get_reward(self) -> float:
         """
         Reward consists out of 3 parts:
             1) the difference in average height
@@ -466,8 +466,9 @@ class TetrisGame:
         :ivar: ALPHA, BETA, GAMMA greater than or equal to zero
         :return: r_(t+1)=α(h_avg^t-h_avg^(t+1) )+β(holes^t-holes^(t+1) )+γ(U^t-U^(t+1) ) where α,β,γ>0
         """
-        ALPHA = 1
-        BETA = 1
+        # Parameters as used in [Thiam, Kessler and Schwenker]
+        ALPHA = 5
+        BETA = 16
         GAMMA = 1
         reward = ALPHA * self.get_avg_height_diff() + BETA * self.get_holes_diff() + GAMMA * self.get_bumpiness_diff()
 
