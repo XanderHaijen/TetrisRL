@@ -24,7 +24,8 @@ def on_policy_mc_test(first_visit: bool, training_batch_size: int = 1000, nb_bat
     plt.plot(episodes, [data[0] for data in scores], 'r', episodes, [data[0] for data in nbs_pieces], 'b')
     plt.ylabel('Average score / nb_pieces')
     plt.xlabel('nb episodes trained')
-    plt.savefig(r"D:\Bibliotheken\Downloads\plot.png", dpi=300, bbox_inches='tight')
+    # plt.savefig(r"D:\Bibliotheken\Downloads\plot.png", dpi=300, bbox_inches='tight')
+    plt.show()
 
 
-on_policy_mc_test(first_visit=True, training_batch_size=100, nb_batches=5, gamma=0.5)
+on_policy_mc_test(first_visit=False, training_batch_size=100, nb_batches=5, gamma=0.5)
