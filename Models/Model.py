@@ -1,13 +1,11 @@
 from abc import abstractmethod
-from typing import Any
-import pickle
-from gym import Env
+from typing import Callable
 
 
-class Algorithm:
+class Model:
 
     @abstractmethod
-    def train(self, learning_rate, nb_episodes=1000, start_episode=0):
+    def train(self, learning_rate: Callable[[int], float], nb_episodes: int = 1000, start_episode: int = 0) -> None:
         """
         Implemented by each algorithm
         """
@@ -19,6 +17,10 @@ class Algorithm:
         Implemented by each algorithm
         :return: the best action to take according to the algorithm. Does not explore, only exploit.
         """
+        pass
+
+    @abstractmethod
+    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes, state):
         pass
 
     @abstractmethod

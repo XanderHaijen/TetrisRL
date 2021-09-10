@@ -2,11 +2,11 @@ import random
 from typing import Callable
 
 from tetris_environment.tetris_env import TetrisEnv
-from Algorithms.Algorithm import Algorithm
+from Models.Model import Model
 import pickle
 
 
-class SarsaZeroForTetris(Algorithm):
+class SarsaZeroForTetris(Model):
     """
     A Sarsa algorithm working with a state-action value function Q(s,a)
     """
@@ -14,7 +14,6 @@ class SarsaZeroForTetris(Algorithm):
     def __init__(self, alpha=1, gamma=1, value_function=None):
         """
 
-        :param env: the environment in which to train the algorithm
         :param alpha: step-size-parameter in the update rule
         :param gamma: parameter in the update rule
         """

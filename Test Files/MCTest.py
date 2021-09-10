@@ -1,6 +1,6 @@
 import math
 
-from Algorithms.OnPolicyMCForTetris import OnPolicyMCForTetris
+from Models.OnPolicyMCForTetris import OnPolicyMCForTetris
 from Evaluation.Evaluate_policy import evaluate_policy
 import matplotlib.pyplot as plt
 
@@ -24,8 +24,8 @@ def on_policy_mc_test(first_visit: bool, training_batch_size: int = 1000, nb_bat
     plt.plot(episodes, [data[0] for data in scores], 'r', episodes, [data[0] for data in nbs_pieces], 'b')
     plt.ylabel('Average score / nb_pieces')
     plt.xlabel('nb episodes trained')
-    # plt.savefig(r"D:\Bibliotheken\Downloads\plot.png", dpi=300, bbox_inches='tight')
-    plt.show()
+    plt.savefig(r"D:\Bibliotheken\Downloads\plot.png", dpi=300, bbox_inches='tight')
+    plt.close()
 
 
 on_policy_mc_test(first_visit=False, training_batch_size=100, nb_batches=5, gamma=0.5)

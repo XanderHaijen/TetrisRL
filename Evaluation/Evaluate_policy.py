@@ -1,19 +1,20 @@
 import time
-
+from typing import List
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-from Algorithms.Algorithm import Algorithm
+from Models.Model import Model
 from gym import Env
 
 
-def evaluate_policy(algorithm: Algorithm, env: Env, nb_episodes: int, render: bool = False) -> pd.DataFrame():
+def evaluate_policy(algorithm: Model, env: Env, nb_episodes: int, render: bool = False) -> pd.DataFrame():
     """
 
     :param render: if True, the games will be shown on screen
-    :param algorithm: of type Algorithm: provides the policy to follow
+    :param algorithm: of type Model: provides the policy to follow
     :param env: the environment in which to test the provided :param algorithm
-    :param nb_episodes: number of evaluation epsiodes
+    :param nb_episodes: number of evaluation episodes
     :return: returns the mean and variance of number of pieces placed, number of lines cleared and score achieved
     """
 
@@ -47,5 +48,14 @@ def evaluate_policy(algorithm: Algorithm, env: Env, nb_episodes: int, render: bo
     return metrics_df
 
 
-
-
+def plot_with_errors(x_sequence, y_sequence, image_path) -> None:
+    """
+    :param x_sequence: list containing moments of measure (in number of episodes)
+    :param y_sequence: list or tuple containing a number of pairs (mean, variance)
+    :param image_path: path where the figure is saved
+    :return: None
+    """
+    plt.errorbar(x_sequence, [mean for mean, _ in y_sequence], [var for _, var in y_sequence],
+                 linestyle='-', marker='^')
+    plt.legend()
+    plt.savefig(image_path)

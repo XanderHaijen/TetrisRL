@@ -2,12 +2,17 @@ import pickle
 import random
 from typing import Callable
 
-from Algorithms.Algorithm import Algorithm
+from Models.Model import Model
 from tetris_environment.tetris_env import TetrisEnv
 
 
-class OnPolicyMCForTetris(Algorithm):
-    def __init__(self, value_function: dict = None, Q: dict = None, C: dict = None, first_visit: bool = True) -> None:
+class OnPolicyMCForTetris(Model):
+    def __init__(self,
+                 gamma: float = 1,
+                 value_function: dict = None,
+                 Q: dict = None,
+                 C: dict = None,
+                 first_visit: bool = True) -> None:
         """
         Initializes a trainable Monte Carlo model.
         The model uses on-policy first-visit or every-visit MC control for epsilon-soft policies. It does not
@@ -17,7 +22,7 @@ class OnPolicyMCForTetris(Algorithm):
         :param Q: parameter in the learning process containing the average returns
         :param C: a kind of counter in the learning process.
         :param first_visit: specifies whether the algorithm is first-visit or every-visit MC (Sutton & Barto, sec. 5.1)
-
+        :param gamma: Importance sampling factor. 0 < gamma < 1
         """
         # the value function, C and Q are represented by a dict of dicts. State-action pairs are stored as
         # {state: {action: value}}. Non-visited state-action pairs are not stored and their
@@ -35,12 +40,12 @@ class OnPolicyMCForTetris(Algorithm):
         self.first_visit = first_visit
         self.Q = Q
         self.C = C
+        self.gamma = gamma
 
     def train(self, learning_rate: Callable[[int], float], nb_episodes: int = 1000,
-              start_episode: int = 0, gamma: float = 1) -> None:
+              start_episode: int = 0) -> None:
         """
         Trains the MC model using on-policy MC control for epsilon soft policies (Sutton & Barto, sec. 5.4)
-        :param gamma: Importance sampling factor. 0 < gamma < 1
         :ivar: 0 <= gamma <= 1
         :param learning_rate: value of epsilon. Must become zero only in the limit, otherwise convergence
         is not guaranteed
@@ -71,7 +76,7 @@ class OnPolicyMCForTetris(Algorithm):
                     old_state = state  # save old state s
                     old_action = action  # save old action a
                     state, reward, done, obs = self.env.step(action)  # take action a, observe s', R_(t+1)
-                    total_return = gamma * total_return + reward
+                    total_return = self.gamma * total_return + reward
                     if not self.first_visit or (old_state, old_action) not in visited_pairs:
 
                         # collect Q(s,a)
@@ -103,7 +108,6 @@ class OnPolicyMCForTetris(Algorithm):
                     else:
                         self.value_function[visited_state].update(self.Q[visited_state])
 
-
     def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes: int, state):
         epsilon = learning_rate(nb_episodes)
         if random.random() <= epsilon:
@@ -128,7 +132,7 @@ class OnPolicyMCForTetris(Algorithm):
             f.close()
 
     @staticmethod
-    def load(filename: str) -> Algorithm:
+    def load(filename: str) -> Model:
         with open(filename, 'rb') as f:
             value_func, C, Q, first_visit = pickle.load(f)
             f.close()
