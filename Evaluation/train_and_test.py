@@ -1,5 +1,5 @@
 import pickle
-from typing import Callable, List, Tuple, Union
+from typing import Callable, Union
 
 import matplotlib.pyplot as plt
 
@@ -146,12 +146,10 @@ def finetune_alpha_gamma(test_values_alpha: Union[tuple, list],
         for alpha, _ in comparison.keys():
             scores, nbs_pieces = comparison.get((alpha, gamma))
             plt.figure(i)
-            plt.errorbar(episodes, [mean for mean, _ in scores], [std_dev for _, std_dev in scores],
-                         label=f"alpha={alpha}")
+            plt.plot(episodes, [mean for mean, _ in scores], label=f"alpha={alpha}")
 
             plt.figure(i + 1)
-            plt.errorbar(episodes, [mean for mean, _ in nbs_pieces], [std_dev for _, std_dev in nbs_pieces],
-                         label=f"alpha={alpha}")
+            plt.plot(episodes, [mean for mean, _ in nbs_pieces], label=f"alpha={alpha}")
 
         plt.figure(i)
         plt.title(f"Score for gamma={gamma}")

@@ -1,4 +1,3 @@
-import os
 import time
 import pandas as pd
 from tetris_environment.tetris_env import TetrisEnv

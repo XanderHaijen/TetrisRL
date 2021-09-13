@@ -1,9 +1,7 @@
 import pickle
 from typing import Callable
 import random
-
 from Models.Model import Model
-from tetris_environment.tetris_env import TetrisEnv
 
 
 class SarsaLambdaForTetris(Model):
@@ -18,6 +16,8 @@ class SarsaLambdaForTetris(Model):
         :param value_function: a dict of dicts containing the value for each state-action pair. If none is provided
         it is initialized as Q(s,a) = 0 for all s, a
         """
+        super().__init__()
+
         if eligibility is None:
             eligibility = {}
         if value_function is None:
@@ -27,7 +27,6 @@ class SarsaLambdaForTetris(Model):
             raise Warning("If lambda = 0, better use SarsaZeroForTetris")
 
         self.value_function = value_function
-        self.env = TetrisEnv()
 
         self.Lambda = Lambda
         self.alpha = alpha

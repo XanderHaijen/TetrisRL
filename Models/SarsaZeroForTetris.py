@@ -1,7 +1,5 @@
 import random
 from typing import Callable
-
-from tetris_environment.tetris_env import TetrisEnv
 from Models.Model import Model
 import pickle
 
@@ -17,6 +15,7 @@ class SarsaZeroForTetris(Model):
         :param alpha: step-size-parameter in the update rule
         :param gamma: parameter in the update rule
         """
+        super().__init__()
 
         # the value function is represented by a dict of dicts. State-action pairs are stored as
         # {state: {action: value}}. Non-visited state-action pairs are not stored and their
@@ -26,7 +25,6 @@ class SarsaZeroForTetris(Model):
             value_function = {}
 
         self.value_function = value_function
-        self.env = TetrisEnv()
 
         self.alpha = alpha
         self.gamma = gamma

@@ -1,17 +1,11 @@
 import pickle
 import random
 from typing import Callable
-
 from Models.Model import Model
-from tetris_environment.tetris_env import TetrisEnv
 
 
 class OnPolicyMCForTetris(Model):
-    def __init__(self,
-                 gamma: float = 1,
-                 value_function: dict = None,
-                 Q: dict = None,
-                 C: dict = None,
+    def __init__(self, gamma: float = 1, value_function: dict = None, Q: dict = None, C: dict = None,
                  first_visit: bool = True) -> None:
         """
         Initializes a trainable Monte Carlo model.
@@ -24,6 +18,8 @@ class OnPolicyMCForTetris(Model):
         :param first_visit: specifies whether the algorithm is first-visit or every-visit MC (Sutton & Barto, sec. 5.1)
         :param gamma: Importance sampling factor. 0 < gamma < 1
         """
+        super().__init__()
+
         # the value function, C and Q are represented by a dict of dicts. State-action pairs are stored as
         # {state: {action: value}}. Non-visited state-action pairs are not stored and their
         # values are considered zero in the beginning.
@@ -36,7 +32,6 @@ class OnPolicyMCForTetris(Model):
             value_function = {}
 
         self.value_function = value_function
-        self.env = TetrisEnv()
         self.first_visit = first_visit
         self.Q = Q
         self.C = C
