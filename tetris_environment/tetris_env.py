@@ -9,13 +9,13 @@ SCREEN_WIDTH, SCREEN_HEIGHT = 200, 400
 class TetrisEnv(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self):
+    def __init__(self, low: int = -3, high: int = 3):
         # open up a game state to communicate with emulator
         self.game_state = game.TetrisGame()
         self._action_set = self.game_state.get_action_set()
         self.action_space = spaces.Discrete(len(self._action_set))
         # self.observation_space = spaces.Box(low=0, high=255, shape=(SCREEN_WIDTH, SCREEN_HEIGHT, 3))
-        self.observation_space = spaces.Box(low=-3, high=3, shape=(9,), dtype=int)
+        self.observation_space = spaces.Box(low=low, high=high, shape=(9,), dtype=int)
         self.viewer = None
 
     def step(self, a):
@@ -58,7 +58,7 @@ class TetrisEnv(gym.Env):
                 self.viewer = rendering.SimpleImageViewer()
             self.viewer.imshow(img)
 
-    def get_encoded_state(self, low: int = -3, high: int = 3) -> tuple:
+    def get_encoded_state(self) -> tuple:
         """
         Encodes the state space from the 10-by-20 (for a normal Tetris game) board to an integer array of size 9 by
         only noting the height differences between adjacent columns. If this difference is greater than :param high or
@@ -69,7 +69,11 @@ class TetrisEnv(gym.Env):
         :return: a tuple of size board_width - 1 containing h_(i+1)-h_i in the i'th spot.
         """
         board_width = self.game_state.board_width
-        state = [0 for _ in range(board_width - 1)]  # np.zeros(board_width - 1, dtype=int)
+        state = [0 for _ in range(board_width - 1)]  # tuple of zeroes
+
+        low = self.observation_space.low
+        high = self.observation_space.high
+
         for i in range(board_width - 1):
             height_diff = self.game_state.get_column_height(i + 1) - self.game_state.get_column_height(i)
             if height_diff < low:
