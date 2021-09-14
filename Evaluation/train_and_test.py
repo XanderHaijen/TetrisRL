@@ -3,11 +3,11 @@ from typing import Callable, Union
 
 import matplotlib.pyplot as plt
 
+from Evaluation import Evaluate_policy
 from Models.Model import Model
 from Models.SarsaLambdaForTetris import SarsaLambdaForTetris
 from Models.SarsaZeroForTetris import SarsaZeroForTetris
 from Models.OnPolicyMCForTetris import OnPolicyMCForTetris
-from Evaluate_policy import evaluate_policy, plot_with_errors
 import os
 import time
 
@@ -44,17 +44,17 @@ def train_and_test(model: Model,
     reached_200, reached_1000 = False, False
     t1, t2 = None, None
 
-    t0 = time.time()
+    t0 = time.perf_counter()
     for i in range(1, nb_training_sessions + 1):
         model.train(learning_rate, training_size, episodes_trained)
         episodes_trained += training_size
-        metrics = evaluate_policy(model, model.env, eval_size)
+        metrics = Evaluate_policy.evaluate_policy(model, model.env, eval_size)
         mean = metrics.mean()
         if not reached_200 and mean["Score"] > 200:
-            t1 = time.time()
+            t1 = time.perf_counter()
             reached_200 = True
         if not reached_1000 and mean["Score"] > 1000:
-            t2 = time.time()
+            t2 = time.perf_counter()
             reached_1000 = True
         std_dev = metrics.std()
         scores.append((mean["Score"], std_dev["Score"]))
@@ -90,11 +90,11 @@ def train_and_test(model: Model,
 
     # plot the figure for the score
     path = os.path.join(metrics_dir, "score_plot.jpg")
-    plot_with_errors(episodes, scores, path)
+    Evaluate_policy.plot_with_errors(episodes, scores, "average score", path)
 
     # plot the figure for the nbs_pieces
-    path = os.path.join(metrics_dir, "score_plot.jpg")
-    plot_with_errors(episodes, nbs_pieces, path)
+    path = os.path.join(metrics_dir, "pieces_plot.jpg")
+    Evaluate_policy.plot_with_errors(episodes, nbs_pieces, "average number of pieces",path)
 
 
 def finetune_alpha_gamma(test_values_alpha: Union[tuple, list],
@@ -102,6 +102,7 @@ def finetune_alpha_gamma(test_values_alpha: Union[tuple, list],
                          learning_rate: Callable[[int], float],
                          plot_dir: str,
                          data_path: str,
+                         models_dir: str,
                          training_size: int = 1000,
                          nb_training_sessions: int = 10,
                          eval_size: int = 500) -> None:
@@ -114,6 +115,7 @@ def finetune_alpha_gamma(test_values_alpha: Union[tuple, list],
     :param learning_rate: the function for epsilon
     :param data_path: the file path where the data will be saved
     :param plot_dir: the directory in which to save all plots
+    :param models_dir: the directory in which to save all learned models for later use
     :param training_size: the length of one training session in episodes
     :param nb_training_sessions: the amount of sessions of length :param training_size
     :param eval_size: the amount of episodes the policy is evaluated each time
@@ -130,13 +132,14 @@ def finetune_alpha_gamma(test_values_alpha: Union[tuple, list],
             for i in range(1, nb_training_sessions + 1):
                 model.train(learning_rate, training_size, episodes_trained)
                 episodes_trained += training_size
-                metrics = evaluate_policy(model, model.env, eval_size)
+                metrics = Evaluate_policy.evaluate_policy(model, model.env, eval_size)
                 mean = metrics.mean()
                 std_dev = metrics.std()
                 scores.append((mean["Score"], std_dev["Score"]))
                 nbs_pieces.append((mean["Nb_pieces"], std_dev["Nb_pieces"]))
                 episodes.append(episodes_trained)
             comparison.update({(alpha, gamma): (scores, nbs_pieces)})
+            model.save(os.path.join(models_dir, f"alpha{alpha}_gamma{gamma}.pickle"))
 
     # Construct plots.
     # One plot is for one value of gamma.
@@ -154,14 +157,14 @@ def finetune_alpha_gamma(test_values_alpha: Union[tuple, list],
         plt.figure(i)
         plt.title(f"Score for gamma={gamma}")
         plt.legend()
-        path = os.path.join(plot_dir, f"plot_{i}.jpg")
-        plt.savefig(path)
+        path = os.path.join(plot_dir, f"plot_{i}.png")
+        plt.savefig(path, format="png")
 
         plt.figure(i + 1)
         plt.title(f"Number of pieces for gamma={gamma}")
         plt.legend()
-        path = os.path.join(plot_dir, f"plot_{i + 1}.jpg")
-        plt.savefig(path)
+        path = os.path.join(plot_dir, f"plot_{i + 1}.png")
+        plt.savefig(path, format="png")
 
         i += 2
 
@@ -170,19 +173,4 @@ def finetune_alpha_gamma(test_values_alpha: Union[tuple, list],
         f.close()
 
 
-def main():
-    # part to finetune alpha and gamma
-    finetune_alpha_gamma((0.1, 0.05, 0.2), (0.8, 0.9, 0.95), lambda x: 1 / x, "plot", "data")
 
-    # part to train and test MC and Sarsa models
-    model = SarsaZeroForTetris(0.1, 0.5)
-    train_and_test(model, lambda x: 1 / (1 + x), "path_1", "path_2")
-
-    model = SarsaLambdaForTetris(0.9, 0.1, 0.5, "accumulating")
-    train_and_test(model, lambda x: 1 / (1 + x), "path_1", "path_2")
-
-    model = OnPolicyMCForTetris(0.9, first_visit=True)
-    train_and_test(model, lambda x: 1 / (1 + x), "path_1", "path_2")
-
-    model = OnPolicyMCForTetris(0.9, first_visit=False)
-    train_and_test(model, lambda x: 1 / (1 + x), "path_1", "path_2")

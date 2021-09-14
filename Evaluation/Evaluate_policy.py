@@ -1,9 +1,6 @@
 import time
-from typing import List
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
-
 from Models.Model import Model
 from gym import Env
 
@@ -48,7 +45,7 @@ def evaluate_policy(algorithm: Model, env: Env, nb_episodes: int, render: bool =
     return metrics_df
 
 
-def plot_with_errors(x_sequence, y_sequence, image_path) -> None:
+def plot_with_errors(x_sequence, y_sequence, name, image_path) -> None:
     """
     :param x_sequence: list containing moments of measure (in number of episodes)
     :param y_sequence: list or tuple containing a number of pairs (mean, variance)
@@ -58,4 +55,6 @@ def plot_with_errors(x_sequence, y_sequence, image_path) -> None:
     plt.errorbar(x_sequence, [mean for mean, _ in y_sequence], [var for _, var in y_sequence],
                  linestyle='-', marker='^')
     plt.legend()
+    plt.xlabel("Number of episodes trained")
+    plt.ylabel(name)
     plt.savefig(image_path)

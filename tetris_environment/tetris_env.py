@@ -71,8 +71,8 @@ class TetrisEnv(gym.Env):
         board_width = self.game_state.board_width
         state = [0 for _ in range(board_width - 1)]  # tuple of zeroes
 
-        low = self.observation_space.low
-        high = self.observation_space.high
+        low = -3
+        high = 3
 
         for i in range(board_width - 1):
             height_diff = self.game_state.get_column_height(i + 1) - self.game_state.get_column_height(i)

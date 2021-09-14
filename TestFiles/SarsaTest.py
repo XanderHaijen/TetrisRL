@@ -2,8 +2,6 @@ from Models.SarsaLambdaForTetris import SarsaLambdaForTetris
 from Evaluation import Evaluate_policy
 from math import log
 
-from Models.SarsaZeroForTetris import SarsaZeroForTetris
-
 
 def sarsa_zero_test():
     model = SarsaLambdaForTetris(0.9, 0.1, 0.2, "replacing")

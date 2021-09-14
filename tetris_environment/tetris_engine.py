@@ -2,9 +2,16 @@
 # http://lusob.com
 # Released under a "Simplified BSD" license
 
+# Modified to work for this project
+
 import random
 import time
 import pygame
+import os
+
+# Activate these two lines for use on a headless server
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+pygame.display.init()
 
 FPS = 25
 BOXSIZE = 20
@@ -227,7 +234,7 @@ class TetrisGame:
 
     @property
     def get_board_width(self):
-        return self.__board_width
+        return self.board_width
 
     @property
     def get_board_height(self):
