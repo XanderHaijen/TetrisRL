@@ -45,15 +45,18 @@ def evaluate_policy(algorithm: Model, env: Env, nb_episodes: int, render: bool =
     return metrics_df
 
 
-def plot_with_errors(x_sequence, y_sequence, name, image_path) -> None:
+def plot_with_errors(x_sequence, y_sequence, name, image_path, fig_nb) -> None:
     """
+    :param name: name to put on the y-axis and in the label of the legend
+    :param fig_nb: ensures plots are not overwritten
     :param x_sequence: list containing moments of measure (in number of episodes)
     :param y_sequence: list or tuple containing a number of pairs (mean, variance)
     :param image_path: path where the figure is saved
     :return: None
     """
+    plt.figure(fig_nb)
     plt.errorbar(x_sequence, [mean for mean, _ in y_sequence], [var for _, var in y_sequence],
-                 linestyle='-', marker='^')
+                 linestyle='-', marker='^', label=name)
     plt.legend()
     plt.xlabel("Number of episodes trained")
     plt.ylabel(name)

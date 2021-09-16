@@ -1,13 +1,7 @@
 import pickle
-from typing import Callable, Union
-
-import matplotlib.pyplot as plt
-
+from typing import Callable
 from Evaluation import Evaluate_policy
 from Models.Model import Model
-from Models.SarsaLambdaForTetris import SarsaLambdaForTetris
-from Models.SarsaZeroForTetris import SarsaZeroForTetris
-from Models.OnPolicyMCForTetris import OnPolicyMCForTetris
 import os
 import time
 
@@ -89,88 +83,11 @@ def train_and_test(model: Model,
         f.close()
 
     # plot the figure for the score
+    j = 1
     path = os.path.join(metrics_dir, "score_plot.jpg")
-    Evaluate_policy.plot_with_errors(episodes, scores, "average score", path)
+    Evaluate_policy.plot_with_errors(episodes, scores, "average score", path,j)
 
     # plot the figure for the nbs_pieces
+    j += 1
     path = os.path.join(metrics_dir, "pieces_plot.jpg")
-    Evaluate_policy.plot_with_errors(episodes, nbs_pieces, "average number of pieces",path)
-
-
-def finetune_alpha_gamma(test_values_alpha: Union[tuple, list],
-                         test_values_gamma: Union[tuple, list],
-                         learning_rate: Callable[[int], float],
-                         plot_dir: str,
-                         data_path: str,
-                         models_dir: str,
-                         training_size: int = 1000,
-                         nb_training_sessions: int = 10,
-                         eval_size: int = 500) -> None:
-    """
-    This function produces several plots and data sequences to evaluate the optimal values of the step-size parameter
-    alpha and the parameter gamma in the update rule of a sarsa(0) model. By default, the function trains and evaluates
-    any pair (alpha, gamma) for 10 sessions of 1000 episodes.
-    :param test_values_alpha: the different values of alpha to test
-    :param test_values_gamma: the different values of gamma to test
-    :param learning_rate: the function for epsilon
-    :param data_path: the file path where the data will be saved
-    :param plot_dir: the directory in which to save all plots
-    :param models_dir: the directory in which to save all learned models for later use
-    :param training_size: the length of one training session in episodes
-    :param nb_training_sessions: the amount of sessions of length :param training_size
-    :param eval_size: the amount of episodes the policy is evaluated each time
-    :return: None. All constructed plots are saved
-    """
-
-    comparison = {}  # contains key-value pairs {(alpha, gamma): (episodes, scores, nbs_pieces)}
-    scores, nbs_pieces, episodes = [], [], []
-    for alpha in test_values_alpha:
-        for gamma in test_values_gamma:
-            episodes_trained = 0
-            scores, nbs_pieces, episodes = [], [], []
-            model = SarsaZeroForTetris(alpha=alpha, gamma=gamma)
-            for i in range(1, nb_training_sessions + 1):
-                model.train(learning_rate, training_size, episodes_trained)
-                episodes_trained += training_size
-                metrics = Evaluate_policy.evaluate_policy(model, model.env, eval_size)
-                mean = metrics.mean()
-                std_dev = metrics.std()
-                scores.append((mean["Score"], std_dev["Score"]))
-                nbs_pieces.append((mean["Nb_pieces"], std_dev["Nb_pieces"]))
-                episodes.append(episodes_trained)
-            comparison.update({(alpha, gamma): (scores, nbs_pieces)})
-            model.save(os.path.join(models_dir, f"alpha{alpha}_gamma{gamma}.pickle"))
-
-    # Construct plots.
-    # One plot is for one value of gamma.
-    # On that plot, all values of alpha are displayed with their standard deviation
-    i = 1
-    for _, gamma in comparison.keys():
-        for alpha, _ in comparison.keys():
-            scores, nbs_pieces = comparison.get((alpha, gamma))
-            plt.figure(i)
-            plt.plot(episodes, [mean for mean, _ in scores], label=f"alpha={alpha}")
-
-            plt.figure(i + 1)
-            plt.plot(episodes, [mean for mean, _ in nbs_pieces], label=f"alpha={alpha}")
-
-        plt.figure(i)
-        plt.title(f"Score for gamma={gamma}")
-        plt.legend()
-        path = os.path.join(plot_dir, f"plot_{i}.png")
-        plt.savefig(path, format="png")
-
-        plt.figure(i + 1)
-        plt.title(f"Number of pieces for gamma={gamma}")
-        plt.legend()
-        path = os.path.join(plot_dir, f"plot_{i + 1}.png")
-        plt.savefig(path, format="png")
-
-        i += 2
-
-    with open(data_path, 'wb') as f:
-        pickle.dump(comparison, f)
-        f.close()
-
-
-
+    Evaluate_policy.plot_with_errors(episodes, nbs_pieces, "average number of pieces",path,j)

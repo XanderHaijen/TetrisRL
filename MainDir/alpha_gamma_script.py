@@ -1,27 +1,66 @@
+import concurrent.futures
 import os
 import shutil
 import sys
 
 sys.path.append("/data/leuven/343/vsc34339/RLP")
 
-from Evaluation.train_and_test import finetune_alpha_gamma
+from Evaluation.train_and_test import train_and_test
+from Models.SarsaZeroForTetris import SarsaZeroForTetris
 
-path_to_scratch_dir = "/scratch/leuven/343/vsc34339"
-path_to_data_dir = "/data/leuven/343/vsc34339"
+args = []
 
-plots_paths = os.path.join(path_to_scratch_dir, "Plots")
-data_path = os.path.join(path_to_scratch_dir, "Data", "eval_data.pickle")
-model_dir = os.path.join(path_to_scratch_dir, "Models")
+path_to_scratch_dir = "/scratch/leuven/343/vsc34339/RLData"
+path_to_data_dir = "/data/leuven/343/vsc34339/RLData"
 
-finetune_alpha_gamma([0.1, 0.05],
-                     [0.9, 0.8],
-                     lambda x: 1/(1+x),
-                     plots_paths,
-                     data_path,
-                     model_dir,
-                     1000, 10, 750)
+path_to_scratch_dir = r"D:\Bibliotheken\Downloads\RLData"
+path_to_data_dir = r"D:\Bibliotheken\OneDrive\Documenten\RLData"
 
-# move plots and data to data directory
-shutil.copy(plots_paths, os.path.join(path_to_data_dir, "Plots"))
-shutil.copy(data_path, os.path.join(path_to_data_dir, "Data"))
-shutil.copy(model_dir, os.path.join(path_to_data_dir, "Models"))
+# This file will train and test several combinations of alpha and gamma using a Sarsa(0) model
+alpha_values = [0.1, 0.15]
+gamma_values = [0.8, 0.9]
+for alpha in alpha_values:
+    for gamma in gamma_values:
+        args.append(SarsaZeroForTetris(alpha, gamma))
+
+# trained simultaneously with concurrent.futures
+def main(func_arg: SarsaZeroForTetris) -> str:
+    """
+
+    :param func_arg: the model to be trained
+    :return: string for reporting
+    """
+
+    # all with the same learning rate of epsilon
+    def epsilon(x):
+        return 1 / (1 + x)
+
+    # Unpack func_args
+    model: SarsaZeroForTetris = func_arg
+
+    name_path = os.path.join(path_to_scratch_dir, f"alpha_{model.alpha}_gamma_{model.gamma}")
+    data_path = os.path.join(name_path, "Data")
+    model_dir = os.path.join(name_path, "Model")
+
+    os.mkdir(name_path)
+    os.mkdir(data_path)
+    os.mkdir(model_dir)
+
+    model_path = os.path.join(model_dir, "model.pickle")
+
+    train_and_test(model,
+                   epsilon,
+                   model_path,
+                   data_path,
+                   10, 5, 10)
+
+    return f"Model gamma:{model.gamma} alpha:{model.alpha} done"
+
+
+if __name__ == '__main__':
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = [executor.submit(main, func_arg) for func_arg in args]
+        for fs in concurrent.futures.as_completed(results):
+            print(fs.result())
+
+    # shutil.copy(path_to_scratch_dir, path_to_data_dir)
