@@ -1,7 +1,10 @@
+import copy
+
 import numpy as np
 import gym
 from gym import spaces
 from tetris_environment import tetris_engine as game
+from tetris_environment.tetris_engine import TetrisGame
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 200, 400
 
@@ -58,7 +61,7 @@ class TetrisEnv(gym.Env):
                 self.viewer = rendering.SimpleImageViewer()
             self.viewer.imshow(img)
 
-    def get_encoded_state(self) -> tuple:
+    def get_encoded_state(self, board=None) -> tuple:
         """
         Encodes the state space from the 10-by-20 (for a normal Tetris game) board to an integer array of size 9 by
         only noting the height differences between adjacent columns. If this difference is greater than :param high or
@@ -68,14 +71,17 @@ class TetrisEnv(gym.Env):
         :param high: the highest number which can be stored
         :return: a tuple of size board_width - 1 containing h_(i+1)-h_i in the i'th spot.
         """
-        board_width = self.game_state.board_width
+        if board is None:
+            board = self.game_state
+
+        board_width = board.board_width
         state = [0 for _ in range(board_width - 1)]  # tuple of zeroes
 
         low = -3
         high = 3
 
         for i in range(board_width - 1):
-            height_diff = self.game_state.get_column_height(i + 1) - self.game_state.get_column_height(i)
+            height_diff = board.get_column_height(i + 1) - board.get_column_height(i)
             if height_diff < low:
                 height_diff = low
             elif height_diff > high:
@@ -83,3 +89,72 @@ class TetrisEnv(gym.Env):
             state[i] = height_diff
 
         return tuple(state)
+
+    def all_possible_placements(self):
+        """
+        Move the piece from all the way left to all the way right, and rotate it in all possible ways.
+        Then return the state achieved by dropping the piece down and the first (of several) actions to
+        take to achieve this state
+        :param board:
+        :return:
+        """
+        all_possible_positions = []
+
+        piece = self.game_state.fallingPiece
+        if piece is not None:
+            for width in range(1, 11):
+                shape = piece['shape']
+                for rotation in range(len(self.game_state.pieces.get(shape))):
+                    new_piece = copy.deepcopy(piece)
+                    new_piece['x'] = width
+                    new_piece['rotation'] = rotation
+                    if self.game_state.is_valid_position(piece=new_piece):
+                        all_possible_positions.append(new_piece)
+
+            all_possible_placements = []
+            for piece in all_possible_positions:
+                board = copy.deepcopy(self.game_state.board)
+                new_game = TetrisGame(board=board)
+                new_game.fallingPiece = piece
+                action = self._get_actions(old_board=self.game_state, new_board=new_game)
+                move_down = np.zeros(6)
+                move_down[4] = 1
+                new_game.frame_step(move_down)
+                state = self.get_encoded_state(new_game)
+                all_possible_placements.append((state, action))
+
+            del new_game
+            return all_possible_placements
+        else:
+            return []
+
+    @staticmethod
+    def _get_actions(old_board, new_board):
+        # Define actions
+        no_move = 0
+        move_left = 1
+        move_right = 3
+        move_down = 4
+        rotate_clockwise = 5
+
+        actions = []
+
+        curr_piece = old_board.fallingPiece
+        target_piece = new_board.fallingPiece
+        assert curr_piece['shape'] == target_piece['shape']
+
+        if curr_piece['rotation'] != target_piece['rotation']:
+            for _ in range(abs(curr_piece["rotation"] - target_piece["rotation"])):
+                actions.append(rotate_clockwise)
+        elif curr_piece['x'] < target_piece['x']:
+            for _ in range(target_piece['x'] - curr_piece['x']):
+                actions.append(move_right)
+        elif curr_piece['x'] > target_piece['x']:
+            for _ in range(curr_piece['x'] - target_piece['x']):
+                actions.append(move_left)
+        else:  # piece placements are identical
+            actions = [no_move]
+
+        actions.append(move_down)
+
+        return actions

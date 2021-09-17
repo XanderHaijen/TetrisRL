@@ -6,25 +6,26 @@ import sys
 sys.path.append("/data/leuven/343/vsc34339/RLP")
 
 from Evaluation.train_and_test import train_and_test
-from Models.SarsaZeroForTetris import SarsaZeroForTetris
+from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
 
 args = []
 
 path_to_scratch_dir = "/scratch/leuven/343/vsc34339/RLData"
 path_to_data_dir = "/data/leuven/343/vsc34339/RLData"
-
-path_to_scratch_dir = r"D:\Bibliotheken\Downloads\RLData"
-path_to_data_dir = r"D:\Bibliotheken\OneDrive\Documenten\RLData"
+#
+# path_to_scratch_dir = r"D:\Bibliotheken\Downloads\RLData"
+# path_to_data_dir = r"D:\Bibliotheken\OneDrive\Documenten\RLData"
 
 # This file will train and test several combinations of alpha and gamma using a Sarsa(0) model
-alpha_values = [0.1, 0.15]
-gamma_values = [0.8, 0.9]
+alpha_values = [0.05]
+gamma_values = [0.9]
 for alpha in alpha_values:
     for gamma in gamma_values:
-        args.append(SarsaZeroForTetris(alpha, gamma))
+        args.append(SarsaZeroAfterStates(alpha, gamma))
+
 
 # trained simultaneously with concurrent.futures
-def main(func_arg: SarsaZeroForTetris) -> str:
+def main(func_arg: SarsaZeroAfterStates) -> str:
     """
 
     :param func_arg: the model to be trained
@@ -36,7 +37,7 @@ def main(func_arg: SarsaZeroForTetris) -> str:
         return 1 / (1 + x)
 
     # Unpack func_args
-    model: SarsaZeroForTetris = func_arg
+    model: SarsaZeroAfterStates = func_arg
 
     name_path = os.path.join(path_to_scratch_dir, f"alpha_{model.alpha}_gamma_{model.gamma}")
     data_path = os.path.join(name_path, "Data")
@@ -63,4 +64,4 @@ if __name__ == '__main__':
         for fs in concurrent.futures.as_completed(results):
             print(fs.result())
 
-    # shutil.copy(path_to_scratch_dir, path_to_data_dir)
+    shutil.copy(path_to_scratch_dir, path_to_data_dir)

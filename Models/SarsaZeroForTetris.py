@@ -80,6 +80,7 @@ class SarsaZeroForTetris(Model):
         return len(self.env.game_state.get_action_set())
 
     def predict(self, state):
+
         values_for_state = self.value_function.get(state, {})
         a_star = self._argmax_dict(values_for_state)  # A_star is the optimal action in state A
         return a_star

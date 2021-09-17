@@ -6,6 +6,8 @@
 
 import random
 import time
+from math import sqrt
+
 import pygame
 import os
 
@@ -163,7 +165,7 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
 
 
 class TetrisGame:
-    def __init__(self):
+    def __init__(self, board=None):
         global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
         pygame.init()
         FPSCLOCK = pygame.time.Clock()
@@ -182,7 +184,7 @@ class TetrisGame:
         self.bumpiness = 0
 
         # setup variables for the start of the game
-        self.board = self.get_blank_board()
+        self.board = self.get_blank_board() if board is None else board
         self.lastMoveDownTime = time.time()
         self.lastMoveSidewaysTime = time.time()
         self.lastFallTime = time.time()
@@ -201,6 +203,7 @@ class TetrisGame:
         self.board_height = BOARDHEIGHT
 
         self.frame_step([1, 0, 0, 0, 0, 0])
+        self.pieces = PIECES
 
         pygame.display.update()
 
@@ -240,6 +243,55 @@ class TetrisGame:
     def get_board_height(self):
         return self.board_height
 
+    def move_left(self):
+        """
+        Moves the piece left if possible. If impossible, function doesn't do anything.
+        :return:
+        """
+        if self.is_valid_position(adjX=-1):
+            self.fallingPiece['x'] -= 1
+            self.movingLeft = True
+            self.movingRight = False
+            self.lastMoveSidewaysTime = time.time()
+
+    def move_right(self):
+        """
+        Move the piece right if possible. If impossible, function doesn't do anything
+        :return:
+        """
+        if self.is_valid_position(adjX=1):
+            self.fallingPiece['x'] += 1
+            self.movingRight = True
+            self.movingLeft = False
+            self.lastMoveSidewaysTime = time.time()
+
+    def rotate_clockwise(self):
+        self.fallingPiece['rotation'] = (self.fallingPiece['rotation'] + 1) % len(
+            PIECES[self.fallingPiece['shape']])
+        if not self.is_valid_position():
+            self.fallingPiece['rotation'] = (self.fallingPiece['rotation'] - 1) % len(
+                PIECES[self.fallingPiece['shape']])
+
+    def rotate_counterclockwise(self):
+        self.fallingPiece['rotation'] = (self.fallingPiece['rotation'] - 1) % len(
+            PIECES[self.fallingPiece['shape']])
+        if not self.is_valid_position():
+            self.fallingPiece['rotation'] = (self.fallingPiece['rotation'] + 1) % len(
+                PIECES[self.fallingPiece['shape']])
+
+    def move_down(self):
+        """
+        Move the piece all the way to the bottom.
+        :return:
+        """
+        self.movingDown = False
+        self.movingLeft = False
+        self.movingRight = False
+        for i in range(1, BOARDHEIGHT):
+            if not self.is_valid_position(adjY=i):
+                break
+        self.fallingPiece['y'] += i - 1
+
     def frame_step(self, input):
         self.movingLeft = False
         self.movingRight = False
@@ -266,44 +318,20 @@ class TetrisGame:
 
         # moving the piece sideways
         if (input[1] == 1) and self.is_valid_position(adjX=-1):
-            self.fallingPiece['x'] -= 1
-            self.movingLeft = True
-            self.movingRight = False
-            self.lastMoveSidewaysTime = time.time()
-
+            self.move_left()
         elif (input[3] == 1) and self.is_valid_position(adjX=1):
-            self.fallingPiece['x'] += 1
-            self.movingRight = True
-            self.movingLeft = False
-            self.lastMoveSidewaysTime = time.time()
-
+            self.move_right()
         # rotating the piece (if there is room to rotate)
-        elif (input[2] == 1):
-            self.fallingPiece['rotation'] = (self.fallingPiece['rotation'] + 1) % len(
-                PIECES[self.fallingPiece['shape']])
-            if not self.is_valid_position():
-                self.fallingPiece['rotation'] = (self.fallingPiece['rotation'] - 1) % len(
-                    PIECES[self.fallingPiece['shape']])
-
-        elif (input[5] == 1):  # rotate the other direction
-            self.fallingPiece['rotation'] = (self.fallingPiece['rotation'] - 1) % len(
-                PIECES[self.fallingPiece['shape']])
-            if not self.is_valid_position():
-                self.fallingPiece['rotation'] = (self.fallingPiece['rotation'] + 1) % len(
-                    PIECES[self.fallingPiece['shape']])
-
+        elif input[2] == 1:
+            self.rotate_clockwise()
+        elif input[5] == 1:  # rotate the other direction
+            self.rotate_counterclockwise()
         # move the current piece all the way down
-        elif (input[4] == 1):
-            self.movingDown = False
-            self.movingLeft = False
-            self.movingRight = False
-            for i in range(1, BOARDHEIGHT):
-                if not self.is_valid_position(adjY=i):
-                    break
-            self.fallingPiece['y'] += i - 1
+        elif input[4] == 1:
+            self.move_down()
 
         # handle moving the piece because of user input
-        if (self.movingLeft or self.movingRight):
+        if self.movingLeft or self.movingRight:
             if self.movingLeft and self.is_valid_position(adjX=-1):
                 self.fallingPiece['x'] -= 1
             elif self.movingRight and self.is_valid_position(adjX=1):
@@ -401,8 +429,8 @@ class TetrisGame:
             i = 0
             while i < BOARDHEIGHT and self.board[col][i] == ".":
                 i += 1
-            nb_holes += len([x for x in self.board[col][i+1:] if x == "."])
-            # nb_holes += max(len([x for x in self.board[col][i+1:] if x == "."]), 3)  # use to limit hole penalty
+            # nb_holes += len([x for x in self.board[col][i+1:] if x == "."])
+            nb_holes += max(len([x for x in self.board[col][i+1:] if x == "."]), 3)  # use to limit hole penalty
 
         nb_holes_diff = self.holes - nb_holes
         self.holes = nb_holes
@@ -440,6 +468,8 @@ class TetrisGame:
         for i in range(len(min_ys) - 1):
             bumpiness = pow(min_ys[i] - min_ys[i+1], 2)
             total_bumpiness += bumpiness
+
+        total_bumpiness = sqrt(total_bumpiness)
 
         bumpiness_diff = self.bumpiness - total_bumpiness
         self.bumpiness = total_bumpiness
@@ -525,16 +555,25 @@ class TetrisGame:
     def is_on_board(x, y):
         return 0 <= x < BOARDWIDTH and y < BOARDHEIGHT
 
-    def is_valid_position(self, adjX=0, adjY=0):
-        # Return True if the piece is within the self.board and not colliding
+    def is_valid_position(self, adjX=0, adjY=0, piece=None):
+        """
+        Return True if the piece is within the self.board and not colliding with any pieces other than
+        the falling piece.
+        :param adjX:
+        :param adjY:
+        :param piece:
+        :return:
+        """
+        if piece is None:
+            piece = self.fallingPiece
         for x in range(TEMPLATEWIDTH):
             for y in range(TEMPLATEHEIGHT):
-                is_above_board = y + self.fallingPiece['y'] + adjY < 0
-                if is_above_board or PIECES[self.fallingPiece['shape']][self.fallingPiece['rotation']][y][x] == BLANK:
+                is_above_board = y + piece['y'] + adjY < 0
+                if is_above_board or PIECES[piece['shape']][piece['rotation']][y][x] == BLANK:
                     continue
-                if not self.is_on_board(x + self.fallingPiece['x'] + adjX, y + self.fallingPiece['y'] + adjY):
+                if not self.is_on_board(x + piece['x'] + adjX, y + piece['y'] + adjY):
                     return False
-                if self.board[x + self.fallingPiece['x'] + adjX][y + self.fallingPiece['y'] + adjY] != BLANK:
+                if self.board[x + piece['x'] + adjX][y + piece['y'] + adjY] != BLANK:
                     return False
         return True
 
