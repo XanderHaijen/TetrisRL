@@ -537,6 +537,7 @@ class TetrisGame:
                     'color': random.randint(0, len(COLORS) - 1)}
         return newPiece
 
+    # noinspection PyTypeChecker
     def add_to_board(self):
         # fill in the self.board based on piece's location, shape, and rotation
         for x in range(TEMPLATEWIDTH):

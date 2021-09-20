@@ -359,6 +359,7 @@ class TetrisGame:
         reward = self.get_reward()
         return None, reward, terminal, data
 
+
     @staticmethod
     def get_action_set():
         return range(6)
@@ -380,10 +381,23 @@ class TetrisGame:
     def get_score(self):
         return self.score
 
+    def is_surrounded(self, col_nb, row_nb) -> int:
+        pass
+
     def get_holes_diff(self):
         """
+        A hole is defined as a cell or region of cells of the Tetris board which is surrounded by a combination of filled cells
+        and the floor/sides.
         :return: holes^t-holes^(t+1)
         """
+        # MAX_HOLE_SIZE = 3
+        # nb_holes = 0
+        # checked_cells = set()
+        # for col in range(BOARDWIDTH):
+        #     for row in range(BOARDHEIGHT):
+        #         nb_holes += min(self.is_surrounded(col, row), MAX_HOLE_SIZE)
+        #
+        #
         nb_holes = 0
 
         for col in range(BOARDWIDTH):
@@ -391,7 +405,7 @@ class TetrisGame:
             while i < BOARDHEIGHT and self.board[col][i] == ".":
                 i += 1
             # nb_holes += len([x for x in self.board[col][i+1:] if x == "."])
-            nb_holes += max(len([x for x in self.board[col][i + 1:] if x == "."]), 3)  # use to limit hole penalty
+            nb_holes += min(len([x for x in self.board[col][i + 1:] if x == "."]), 3)  # use to limit hole penalty
 
         nb_holes_diff = self.holes - nb_holes
         self.holes = nb_holes
@@ -420,15 +434,10 @@ class TetrisGame:
         total_bumpiness = 0
         min_ys = []
 
-        for col in range(BOARDWIDTH):
-            i = 0
-            while i < BOARDHEIGHT and self.board[col][i] == ".":
-                i += 1
-            min_ys.append(i)
-
-        for i in range(len(min_ys) - 1):
-            bumpiness = pow(min_ys[i] - min_ys[i + 1], 2)
-            total_bumpiness += bumpiness
+        total_bumpiness = 0
+        for col in range(BOARDWIDTH - 1):
+            col_difference = pow(self.get_column_height(col) - self.get_column_height(col + 1), 2)
+            total_bumpiness += col_difference
 
         total_bumpiness = sqrt(total_bumpiness)
 
@@ -492,6 +501,7 @@ class TetrisGame:
         for x in range(TEMPLATEWIDTH):
             for y in range(TEMPLATEHEIGHT):
                 if PIECES[self.fallingPiece['shape']][self.fallingPiece['rotation']][y][x] != BLANK:
+                    # noinspection PyTypeChecker
                     self.board[x + self.fallingPiece['x']][y + self.fallingPiece['y']] = self.fallingPiece['color']
 
     def get_blank_board(self):

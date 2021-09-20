@@ -3,8 +3,8 @@ import copy
 import numpy as np
 import gym
 from gym import spaces
-from tetris_environment import tetris_engine as game
-from tetris_environment.tetris_engine import TetrisGame
+from tetris_environment_rendered import tetris_engine as game
+from tetris_environment_rendered.tetris_engine import TetrisGame
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 200, 400
 
@@ -24,7 +24,6 @@ class TetrisEnv(gym.Env):
     def step(self, a):
         self._action_set = np.zeros([len(self._action_set)])
         self._action_set[a] = 1
-        reward = 0.0
         _, reward, terminal, observations = self.game_state.frame_step(self._action_set)
         state = self.get_encoded_state()
         return state, reward, terminal, observations
@@ -64,11 +63,9 @@ class TetrisEnv(gym.Env):
     def get_encoded_state(self, board=None) -> tuple:
         """
         Encodes the state space from the 10-by-20 (for a normal Tetris game) board to an integer array of size 9 by
-        only noting the height differences between adjacent columns. If this difference is greater than :param high or
-        smaller than :param low, the value is equal to :param high or :param low respectively.
-
-        :param low: the lowest number which can be stored
-        :param high: the highest number which can be stored
+        only noting the height differences between adjacent columns. If this difference is greater than 3 or
+        smaller than -3, the value is equal to 3 or -3 respectively.
+        :param board: the Tetris board to be encoded. If none is provided, the board of the class is used
         :return: a tuple of size board_width - 1 containing h_(i+1)-h_i in the i'th spot.
         """
         if board is None:
@@ -95,8 +92,8 @@ class TetrisEnv(gym.Env):
         Move the piece from all the way left to all the way right, and rotate it in all possible ways.
         Then return the state achieved by dropping the piece down and the first (of several) actions to
         take to achieve this state
-        :param board:
-        :return:
+        :return: tuple of form (afterstate, actions) for all possible afterstates starting from the current
+        state of self
         """
         all_possible_positions = []
 

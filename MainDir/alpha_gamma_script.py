@@ -72,5 +72,3 @@ for arg in args:
 #         results = [executor.submit(main, func_arg) for func_arg in args]
 #         for fs in concurrent.futures.as_completed(results):
 #             print(fs.result())
-
-    # shutil.copy(path_to_scratch_dir, path_to_data_dir)

@@ -16,4 +16,4 @@ setup(name='gym_tetris',
       packages=[package for package in find_packages()
                 if package.startswith('gym')],
       zip_safe=False,
-)
+      )

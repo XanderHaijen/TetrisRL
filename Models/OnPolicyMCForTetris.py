@@ -51,7 +51,6 @@ class OnPolicyMCForTetris(Model):
         """
         if self.first_visit:  # first-visit MC control
             self.C = {}  # initialize self.C(s,a)
-            returns = {}  # initialize returns(s,a)
 
             for episode in range(1, nb_episodes + 1):
                 # start the new episode
@@ -94,6 +93,7 @@ class OnPolicyMCForTetris(Model):
                         # compute new value for Q(s,a) and store in Q
                         return_so_far = return_so_far + (total_return - return_so_far) / cumulative
                         self.Q[old_state].update({old_action: return_so_far})
+                    visited_pairs.add((old_state, old_action))
 
                 # After episode: update value function and thus the policy
                 visited_states = {state for state, action in visited_pairs}

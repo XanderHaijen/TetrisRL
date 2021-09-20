@@ -18,7 +18,7 @@ class SarsaZeroAfterStates(Model):
         super().__init__()
 
         # the value function is represented by a dict of states S'.
-        # All values are initialized to zero.
+        # All values are initialized to 0.
         if value_function is None:
             value_function = {}
 
@@ -57,7 +57,7 @@ class SarsaZeroAfterStates(Model):
                 new_value = old_value + self.alpha * (reward + self.gamma + value_at_next_state - old_value)
                 self.value_function.update({state: new_value})
 
-    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes, board):
+    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes: int, board):
         """
         Returns either a random set of actions leading to a random next board state, or a sequence of actions
         leading to the most favourable afterstate.
@@ -67,14 +67,14 @@ class SarsaZeroAfterStates(Model):
         :return:
         """
         if random.random() < learning_rate(nb_episodes):
-            return self._pick_random_afterstate()
+            return self._pick_random_action()
         else:  # take greedy action
             return self.predict(board)
 
     def _nb_actions(self) -> int:
         return len(self.env.game_state.get_action_set())
 
-    def _pick_random_afterstate(self):
+    def _pick_random_action(self):
         possible_placements = self.env.all_possible_placements()
         if len(possible_placements) > 0:
             afterstate, action = random.choice(possible_placements)
