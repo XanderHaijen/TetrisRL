@@ -8,6 +8,13 @@ import random
 import time
 from math import sqrt
 
+import pygame
+import os
+
+# Activate these two lines for use on a headless server
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+pygame.display.init()
+
 FPS = 25
 BOXSIZE = 20
 BOARDWIDTH = 10
@@ -160,6 +167,13 @@ PIECES = {'S': S_SHAPE_TEMPLATE,
 class TetrisGame:
     def __init__(self, board=None):
         global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
+        pygame.init()
+        FPSCLOCK = pygame.time.Clock()
+        DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+        BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
+        BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
+        pygame.display.iconify()
+        pygame.display.set_caption('Tetromino')
 
         # DEBUG
         self.total_lines = 0
@@ -191,6 +205,8 @@ class TetrisGame:
         self.frame_step([1, 0, 0, 0, 0, 0])
         self.pieces = PIECES
 
+        pygame.display.update()
+
     def reinit(self):
         """
         Re-initializes the board to an empty board
@@ -216,6 +232,8 @@ class TetrisGame:
         self.nextPiece = self.get_new_piece()
 
         self.frame_step([1, 0, 0, 0, 0, 0])
+
+        pygame.display.update()
 
     @property
     def get_board_width(self):
@@ -290,12 +308,13 @@ class TetrisGame:
             self.lastFallTime = time.time()  # reset self.lastFallTime
 
             if not self.is_valid_position():
+                image_data = pygame.surfarray.array3d(pygame.display.get_surface())
                 terminal = True
 
                 self.reinit()
                 reward = -10  # penalty for game over
                 data = {"score": self.score, "lines_cleared": self.total_lines, "new_piece": new_piece}
-                return None, reward, terminal, data  # can't fit a new piece on the self.board, so game over
+                return image_data, reward, terminal, data  # can't fit a new piece on the self.board, so game over
 
         # moving the piece sideways
         if (input[1] == 1) and self.is_valid_position(adjX=-1):
@@ -356,8 +375,28 @@ class TetrisGame:
             self.fallingPiece['y'] += 1
 
         data = {"score": self.score, "lines_cleared": cleared, "new_piece": new_piece}
+
+        # drawing everything on the screen
+        DISPLAYSURF.fill(BGCOLOR)
+        self.draw_board()
+        # self.drawStatus()
+        # self.drawNextPiece()
+        if self.fallingPiece is not None:
+            self.draw_piece(self.fallingPiece)
+
+        pygame.display.update()
+        #
+        # if cleared > 0:
+        #     reward = 100 * cleared
+
+        image_data = pygame.surfarray.array3d(pygame.display.get_surface())
         reward = self.get_reward()
-        return None, reward, terminal, data
+        return image_data, reward, terminal, data
+
+    @staticmethod
+    def get_image():
+        image_data = pygame.surfarray.array3d(pygame.transform.rotate(pygame.display.get_surface(), 90))
+        return image_data
 
     @staticmethod
     def get_action_set():
@@ -391,7 +430,7 @@ class TetrisGame:
             while i < BOARDHEIGHT and self.board[col][i] == ".":
                 i += 1
             # nb_holes += len([x for x in self.board[col][i+1:] if x == "."])
-            nb_holes += max(len([x for x in self.board[col][i + 1:] if x == "."]), 3)  # use to limit hole penalty
+            nb_holes += max(len([x for x in self.board[col][i+1:] if x == "."]), 3)  # use to limit hole penalty
 
         nb_holes_diff = self.holes - nb_holes
         self.holes = nb_holes
@@ -427,7 +466,7 @@ class TetrisGame:
             min_ys.append(i)
 
         for i in range(len(min_ys) - 1):
-            bumpiness = pow(min_ys[i] - min_ys[i + 1], 2)
+            bumpiness = pow(min_ys[i] - min_ys[i+1], 2)
             total_bumpiness += bumpiness
 
         total_bumpiness = sqrt(total_bumpiness)
@@ -442,6 +481,17 @@ class TetrisGame:
             if self.board[column_nb][row] != ".":
                 return BOARDHEIGHT - row
         return 0
+
+        # Based on:
+
+        # for i in range(0, BOARDHEIGHT):
+        #     blank_row = True
+        #     for j in range(0, BOARDWIDTH):
+        #         if self.board[j][i] != '.':
+        #             num_blocks += 1
+        #             blank_row = False
+        #     if not blank_row and stack_height is None:
+        #         stack_height = BOARDHEIGHT - i
 
     def get_reward(self) -> float:
         """
@@ -561,3 +611,61 @@ class TetrisGame:
         # Convert the given xy coordinates of the self.board to xy
         # coordinates of the location on the screen.
         return (XMARGIN + (boxx * BOXSIZE)), (TOPMARGIN + (boxy * BOXSIZE))
+
+    def draw_box(self, boxx, boxy, color, pixelx=None, pixely=None):
+        # draw a single box (each tetromino piece has four boxes)
+        # at xy coordinates on the self.board. Or, if pixelx & pixely
+        # are specified, draw to the pixel coordinates stored in
+        # pixelx & pixely (this is used for the "Next" piece).
+        if color == BLANK:
+            return
+        if pixelx is None and pixely is None:
+            pixelx, pixely = self.convert_to_pixel_coords(boxx, boxy)
+        pygame.draw.rect(DISPLAYSURF, COLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
+        pygame.draw.rect(DISPLAYSURF, LIGHTCOLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
+
+    def draw_board(self):
+        # draw the border around the self.board
+        pygame.draw.rect(DISPLAYSURF, BORDERCOLOR,
+                         (XMARGIN - 3, TOPMARGIN - 7, (BOARDWIDTH * BOXSIZE) + 8, (BOARDHEIGHT * BOXSIZE) + 8), 5)
+
+        # fill the background of the self.board
+        pygame.draw.rect(DISPLAYSURF, BGCOLOR, (XMARGIN, TOPMARGIN, BOXSIZE * BOARDWIDTH, BOXSIZE * BOARDHEIGHT))
+        # draw the individual boxes on the self.board
+        for x in range(BOARDWIDTH):
+            for y in range(BOARDHEIGHT):
+                self.draw_box(x, y, self.board[x][y])
+
+    def draw_status(self):
+        # draw the self.score text
+        scoreSurf = BASICFONT.render('self.score: %s' % self.score, True, TEXTCOLOR)
+        scoreRect = scoreSurf.get_rect()
+        scoreRect.topleft = (WINDOWWIDTH - 150, 20)
+        DISPLAYSURF.blit(scoreSurf, scoreRect)
+
+        # draw the self.level text
+        levelSurf = BASICFONT.render('self.level: %s' % self.level, True, TEXTCOLOR)
+        levelRect = levelSurf.get_rect()
+        levelRect.topleft = (WINDOWWIDTH - 150, 50)
+        DISPLAYSURF.blit(levelSurf, levelRect)
+
+    def draw_piece(self, piece, pixelx=None, pixely=None):
+        shapeToDraw = PIECES[piece['shape']][piece['rotation']]
+        if pixelx == None and pixely == None:
+            # if pixelx & pixely hasn't been specified, use the location stored in the piece data structure
+            pixelx, pixely = self.convert_to_pixel_coords(piece['x'], piece['y'])
+
+        # draw each of the boxes that make up the piece
+        for x in range(TEMPLATEWIDTH):
+            for y in range(TEMPLATEHEIGHT):
+                if shapeToDraw[y][x] != BLANK:
+                    self.draw_box(None, None, piece['color'], pixelx + (x * BOXSIZE), pixely + (y * BOXSIZE))
+
+    def draw_next_piece(self):
+        # draw the "next" text
+        nextSurf = BASICFONT.render('Next:', True, TEXTCOLOR)
+        nextRect = nextSurf.get_rect()
+        nextRect.topleft = (WINDOWWIDTH - 120, 80)
+        DISPLAYSURF.blit(nextSurf, nextRect)
+        # draw the "next" piece
+        self.draw_piece(self.nextPiece, pixelx=WINDOWWIDTH - 120, pixely=100)

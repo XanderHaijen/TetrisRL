@@ -1,4 +1,5 @@
 import concurrent.futures
+import datetime
 import os
 import shutil
 import sys
@@ -13,8 +14,8 @@ args = []
 path_to_scratch_dir = "/scratch/leuven/343/vsc34339/RLData"
 path_to_data_dir = "/data/leuven/343/vsc34339/RLData"
 #
-# path_to_scratch_dir = r"D:\Bibliotheken\Downloads\RLData"
-# path_to_data_dir = r"D:\Bibliotheken\OneDrive\Documenten\RLData"
+path_to_scratch_dir = r"D:\Bibliotheken\Downloads\RLData"
+path_to_data_dir = r"D:\Bibliotheken\OneDrive\Documenten\RLData"
 
 # This file will train and test several combinations of alpha and gamma using a Sarsa(0) model
 alpha_values = [0.05]
@@ -38,10 +39,14 @@ def main(func_arg: SarsaZeroAfterStates) -> str:
 
     # Unpack func_args
     model: SarsaZeroAfterStates = func_arg
+    print(f"Starting model gamma:{model.gamma}, alpha: {model.alpha} at {datetime.datetime.now()}")
 
     name_path = os.path.join(path_to_scratch_dir, f"alpha_{model.alpha}_gamma_{model.gamma}")
     data_path = os.path.join(name_path, "Data")
     model_dir = os.path.join(name_path, "Model")
+
+    if os.path.isdir(name_path):
+        shutil.rmtree(name_path)
 
     os.mkdir(name_path)
     os.mkdir(data_path)
@@ -55,13 +60,17 @@ def main(func_arg: SarsaZeroAfterStates) -> str:
                    data_path,
                    10, 5, 10)
 
-    return f"Model gamma:{model.gamma} alpha:{model.alpha} done"
+    return f"Model gamma:{model.gamma} alpha:{model.alpha} done at {datetime.datetime.now()}"
 
 
-if __name__ == '__main__':
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = [executor.submit(main, func_arg) for func_arg in args]
-        for fs in concurrent.futures.as_completed(results):
-            print(fs.result())
+for arg in args:
+    result = main(arg)
+    print(result)
 
-    shutil.copy(path_to_scratch_dir, path_to_data_dir)
+# if __name__ == '__main__':
+#     with concurrent.futures.ProcessPoolExecutor() as executor:
+#         results = [executor.submit(main, func_arg) for func_arg in args]
+#         for fs in concurrent.futures.as_completed(results):
+#             print(fs.result())
+
+    # shutil.copy(path_to_scratch_dir, path_to_data_dir)

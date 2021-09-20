@@ -95,6 +95,7 @@ class TetrisEnv(gym.Env):
         Move the piece from all the way left to all the way right, and rotate it in all possible ways.
         Then return the state achieved by dropping the piece down and the first (of several) actions to
         take to achieve this state
+        :param board:
         :return:
         """
         all_possible_positions = []

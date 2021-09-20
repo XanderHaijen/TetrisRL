@@ -3,6 +3,7 @@ from typing import Callable
 from Evaluation import Evaluate_policy
 from Models.Model import Model
 import os
+import datetime
 import time
 
 
@@ -33,6 +34,7 @@ def train_and_test(model: Model,
     :return: the evaluation data for nbs_pieces and the score.
     All computed values, including the returns, are saved to file.
     """
+    print("starting train and test")
     episodes_trained = 0
     scores, nbs_pieces, episodes = [], [], []
     reached_200, reached_1000 = False, False
@@ -40,8 +42,10 @@ def train_and_test(model: Model,
 
     t0 = time.perf_counter()
     for i in range(1, nb_training_sessions + 1):
+        print(f"starting training round {i} at {datetime.datetime.now()}")
         model.train(learning_rate, training_size, episodes_trained)
         episodes_trained += training_size
+        print(f"starting evaluations round {i} at {datetime.datetime.now()}")
         metrics = Evaluate_policy.evaluate_policy(model, model.env, eval_size)
         mean = metrics.mean()
         if not reached_200 and mean["Score"] > 200:
@@ -54,6 +58,10 @@ def train_and_test(model: Model,
         scores.append((mean["Score"], std_dev["Score"]))
         nbs_pieces.append((mean["Nb_pieces"], std_dev["Nb_pieces"]))
         episodes.append(episodes_trained)
+        model.save(model_path)
+        print(f"ending round {i} at {datetime.datetime.now()}. Average score is {mean['Score']}.")
+
+    print(f"starting afterprocessing at {datetime.datetime.now()}")
 
     # save the measured times
     if t1 is not None:
@@ -82,12 +90,13 @@ def train_and_test(model: Model,
         pickle.dump((episodes, scores, nbs_pieces), f)
         f.close()
 
+    print("plotting figures")
     # plot the figure for the score
     j = 1
     path = os.path.join(metrics_dir, "score_plot.jpg")
-    Evaluate_policy.plot_with_errors(episodes, scores, "average score", path,j)
+    Evaluate_policy.plot_with_errors(episodes, scores, "average score", path, j)
 
     # plot the figure for the nbs_pieces
     j += 1
     path = os.path.join(metrics_dir, "pieces_plot.jpg")
-    Evaluate_policy.plot_with_errors(episodes, nbs_pieces, "average number of pieces",path,j)
+    Evaluate_policy.plot_with_errors(episodes, nbs_pieces, "average number of pieces", path, j)
