@@ -14,7 +14,7 @@ class OnPolicyMCAfterstates(Model):
         :param value_function: a dict for all states
         :param Q: parameter in the learning process containing the average returns
         :param C: a kind of counter in the learning process.
-        :param first_visit: specifies whether the algorithm is first-visit or every-visit MC (Sutton & Barto, sec. 5.1)
+        :param first_visit: specifies whether the model is first-visit or every-visit MC (Sutton & Barto, sec. 5.1)
         :param gamma: Importance sampling factor.
         :ivar 0 < gamma < 1
         """

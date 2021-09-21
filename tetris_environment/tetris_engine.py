@@ -390,14 +390,6 @@ class TetrisGame:
         and the floor/sides.
         :return: holes^t-holes^(t+1)
         """
-        # MAX_HOLE_SIZE = 3
-        # nb_holes = 0
-        # checked_cells = set()
-        # for col in range(BOARDWIDTH):
-        #     for row in range(BOARDHEIGHT):
-        #         nb_holes += min(self.is_surrounded(col, row), MAX_HOLE_SIZE)
-        #
-        #
         nb_holes = 0
 
         for col in range(BOARDWIDTH):
@@ -418,10 +410,14 @@ class TetrisGame:
         """
         old_height = self.avg_height
         total_height = 0
+        nb_used_columns = 0
         for i in range(BOARDWIDTH):
+            col_height = self.get_column_height(i)
             total_height += self.get_column_height(i)
+            if col_height > 0:
+                nb_used_columns += 1
 
-        avg_height_new = total_height / BOARDWIDTH
+        avg_height_new = total_height / nb_used_columns
         avg_height_diff = old_height - avg_height_new
         self.avg_height = avg_height_new
 

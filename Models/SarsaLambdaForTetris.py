@@ -7,7 +7,7 @@ from Models.Model import Model
 class SarsaLambdaForTetris(Model):
     def __init__(self, Lambda: float, alpha: float, gamma: float, traces: str, value_function=None, eligibility=None):
         """
-        Initializes a sarsa-control algorithm with a Tetris environment
+        Initializes a sarsa-control model with a Tetris environment
         :param Lambda: determines the amount of bootstrapping.
             NOTE: if lambda = 0, better use SarsaZeroForTetris
         :param alpha: step-size parameter in the update rule
@@ -40,7 +40,7 @@ class SarsaLambdaForTetris(Model):
 
     def train(self, learning_rate: Callable[[int], float], nb_episodes: int = 1000, start_episode: int = 0) -> None:
         """
-        Predicts the value function and updates the epsilon-greedy policy according to the Sarsa(lambda) algorithm
+        Predicts the value function and updates the epsilon-greedy policy according to the Sarsa(lambda) model
         (Sutton & Barto, section 7.5)
         :param learning_rate: = epsilon. A function of the number of episodes which goes to zero in the limit
         :param nb_episodes: the duration of one ´´training session´´

@@ -11,15 +11,15 @@ class Model:
     @abstractmethod
     def train(self, learning_rate: Callable[[int], float], nb_episodes: int = 1000, start_episode: int = 0) -> None:
         """
-        Implemented by each algorithm
+        Implemented by each model
         """
         pass
 
     @abstractmethod
     def predict(self, state):
         """
-        Implemented by each algorithm
-        :return: the best action to take according to the algorithm. Does not explore, only exploit.
+        Implemented by each model
+        :return: the best action to take according to the model. Does not explore, only exploit.
         """
         pass
 

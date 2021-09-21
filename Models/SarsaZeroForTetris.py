@@ -6,7 +6,7 @@ import pickle
 
 class SarsaZeroForTetris(Model):
     """
-    A Sarsa algorithm working with a state-action value function Q(s,a)
+    A Sarsa model working with a state-action value function Q(s,a)
     """
 
     def __init__(self, alpha=1, gamma=1, value_function=None):
@@ -31,7 +31,7 @@ class SarsaZeroForTetris(Model):
 
     def train(self, learning_rate: Callable[[int], float], nb_episodes: int = 1000, start_episode: int = 0) -> None:
         """
-        Updates the value function according to the Sarsa(0) algorithm (Sutton & Barto, page 155)
+        Updates the value function according to the Sarsa(0) model (Sutton & Barto, page 155)
         :param learning_rate: = epsilon. A function of the number of episodes which goes towards zero at infinity
         :param nb_episodes: the duration of ´´the training session´´
         :param start_episode: zero in the beginning, greater than zero when training an already (partially)

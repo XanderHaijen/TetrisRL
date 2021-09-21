@@ -34,8 +34,8 @@ def main(func_arg: SarsaZeroAfterStates) -> str:
     """
 
     # all with the same learning rate of epsilon
-    def epsilon(x):
-        return 1 / (1 + x)
+    def epsilon(x: int) -> float:
+        return 0.001
 
     # Unpack func_args
     model: SarsaZeroAfterStates = func_arg

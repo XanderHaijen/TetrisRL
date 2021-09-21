@@ -15,7 +15,7 @@ class OnPolicyMCForTetris(Model):
         the values are initialized as zero for all state-action pairs
         :param Q: parameter in the learning process containing the average returns
         :param C: a kind of counter in the learning process.
-        :param first_visit: specifies whether the algorithm is first-visit or every-visit MC (Sutton & Barto, sec. 5.1)
+        :param first_visit: specifies whether the model is first-visit or every-visit MC (Sutton & Barto, sec. 5.1)
         :param gamma: Importance sampling factor. 0 < gamma < 1
         """
         super().__init__()
