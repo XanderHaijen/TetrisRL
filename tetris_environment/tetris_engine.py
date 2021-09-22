@@ -225,8 +225,8 @@ class UnrenderedTetrisGame:
         self.board_width = BOARDWIDTH
         self.board_height = BOARDHEIGHT
 
-        self.frame_step([1, 0, 0, 0, 0, 0])
         self.pieces = PIECES
+        self.frame_step([1, 0, 0, 0, 0, 0])
 
 
     def reinit(self):

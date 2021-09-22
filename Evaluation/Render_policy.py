@@ -1,9 +1,10 @@
 import time
 from gym import Env
 from Models.Model import Model
+from tetris_environment.tetris_env import TetrisEnv
 
 
-def render_policy(model: Model, env: Env = TetrisEnv(), nb_episodes: int = 10) -> None:
+def render_policy(model: Model, env: TetrisEnv, nb_episodes: int = 10) -> None:
     for episode in range(1, nb_episodes + 1):
         state = env.reset()
         env.render()

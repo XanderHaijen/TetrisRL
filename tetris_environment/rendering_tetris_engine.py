@@ -11,14 +11,11 @@ import os
 
 class RenderingTetrisGame(UnrenderedTetrisGame):
     def __init__(self, type: str, board=None):
-        pygame.init()
-        pygame.display.init()
-        # activate this line for use on headless server
-        # os.environ["SDL_VIDEODRIVER"] = "dummy"
-        global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
+        global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT, WINDOWWIDTH
         WINDOWWIDTH = BOXSIZE * 4 if type == 'fourer' else BOXSIZE * 10
-        DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+        pygame.init()
         FPSCLOCK = pygame.time.Clock()
+        DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
         BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
         BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
         pygame.display.iconify()
@@ -35,8 +32,14 @@ class RenderingTetrisGame(UnrenderedTetrisGame):
 
     def frame_step(self, input):
         _, reward, terminal, data = super().frame_step(input)
+
         if not terminal:
+            DISPLAYSURF.fill(BGCOLOR)
+            self.draw_board()
+            if self.fallingPiece != None:
+                self.draw_piece(self.fallingPiece)
             pygame.display.update()
+
         return None, reward, terminal, data
 
     def get_image(self):
@@ -58,14 +61,14 @@ class RenderingTetrisGame(UnrenderedTetrisGame):
     def draw_board(self):
         # draw the border around the self.board
         pygame.draw.rect(DISPLAYSURF, BORDERCOLOR,
-                         (XMARGIN - 3, TOPMARGIN - 7, (self.get_board_width() * BOXSIZE) + 8,
+                         (XMARGIN - 3, TOPMARGIN - 7, (self.board_width * BOXSIZE) + 8,
                           (BOARDHEIGHT * BOXSIZE) + 8), 5)
 
         # fill the background of the self.board
         pygame.draw.rect(DISPLAYSURF, BGCOLOR,
-                         (XMARGIN, TOPMARGIN, BOXSIZE * self.get_board_width(), BOXSIZE * BOARDHEIGHT))
+                         (XMARGIN, TOPMARGIN, BOXSIZE * self.board_width, BOXSIZE * BOARDHEIGHT))
         # draw the individual boxes on the self.board
-        for x in range(self.get_board_width()):
+        for x in range(self.board_width):
             for y in range(BOARDHEIGHT):
                 self.draw_box(x, y, self.board[x][y])
 
@@ -73,13 +76,13 @@ class RenderingTetrisGame(UnrenderedTetrisGame):
         # draw the self.score text
         scoreSurf = BASICFONT.render('self.score: %s' % self.score, True, TEXTCOLOR)
         scoreRect = scoreSurf.get_rect()
-        scoreRect.topleft = (self.get_board_width() * BOXSIZE - 150, 20)
+        scoreRect.topleft = (self.board_width * BOXSIZE - 150, 20)
         DISPLAYSURF.blit(scoreSurf, scoreRect)
 
         # draw the self.level text
         levelSurf = BASICFONT.render('self.level: %s' % self.level, True, TEXTCOLOR)
         levelRect = levelSurf.get_rect()
-        levelRect.topleft = (self.get_board_width() * BOXSIZE - 150, 50)
+        levelRect.topleft = (self.board_width * BOXSIZE - 150, 50)
         DISPLAYSURF.blit(levelSurf, levelRect)
 
     def draw_piece(self, piece, pixelx=None, pixely=None):
