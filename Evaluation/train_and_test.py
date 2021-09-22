@@ -13,7 +13,8 @@ def train_and_test(model: Model,
                    metrics_dir: str,
                    training_size: int = 1000,
                    nb_training_sessions: int = 20,
-                   eval_size: int = 500) -> None:
+                   eval_size: int = 500,
+                   ep_trained: int = 0) -> None:
     """
     This file trains and tests the policies in the same fashion:
     By default, 20 training rounds of 1000 games each, with 20 evaluation rounds of 500 games in between
@@ -24,6 +25,7 @@ def train_and_test(model: Model,
     Training data saved:
         • the time it took the algorithm to achieve an average score of 200 and 1000 (in seconds).
             If this score was not reached after the whole of training, the time is of type str, containing "Inf"
+    :param ep_trained: for training an already (partially) trained agent
     :param model: the model to train and test
     :param learning_rate: the function for epsilon
     :param model_path: the file path where the model will be saved
@@ -35,7 +37,7 @@ def train_and_test(model: Model,
     All computed values, including the returns, are saved to file.
     """
     print("starting train and test")
-    episodes_trained = 0
+    episodes_trained = ep_trained
     scores, nbs_pieces, episodes = [], [], []
     reached_200, reached_1000 = False, False
     t1, t2 = None, None

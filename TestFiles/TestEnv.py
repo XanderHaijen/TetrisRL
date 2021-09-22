@@ -1,4 +1,10 @@
-from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
-from Evaluation.render_policy import render_policy
-model = SarsaZeroAfterStates.load(r'C:\Users\xande\Downloads\model.pickle')
-render_policy(model, 10)
+import random
+import time
+from tetris_environment.tetris_env import TetrisEnv
+game = TetrisEnv(type='fourer', render=True)
+
+for _ in range(500):
+    a = random.randint(0, 5)
+    game.step(a)
+    game.render()
+    time.sleep(0.1)

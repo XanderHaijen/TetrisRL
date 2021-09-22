@@ -1,5 +1,8 @@
 import random
 from typing import Callable
+
+from gym import Env
+
 from Models.Model import Model
 import pickle
 
@@ -9,13 +12,13 @@ class SarsaZeroAfterStates(Model):
     A Sarsa model working with an afterstate value function V(S')
     """
 
-    def __init__(self, alpha: float = 1, gamma: float = 1, value_function: dict = None):
+    def __init__(self, env: Env, alpha: float = 1, gamma: float = 1, value_function: dict = None):
         """
 
         :param alpha: step-size-parameter in the update rule
         :param gamma: parameter in the update rule
         """
-        super().__init__()
+        super().__init__(env)
 
         # the value function is represented by a dict of states S'.
         # All values are initialized to 0.

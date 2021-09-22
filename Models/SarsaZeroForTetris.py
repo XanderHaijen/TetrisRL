@@ -1,5 +1,8 @@
 import random
 from typing import Callable
+
+from gym import Env
+
 from Models.Model import Model
 import pickle
 
@@ -9,13 +12,13 @@ class SarsaZeroForTetris(Model):
     A Sarsa model working with a state-action value function Q(s,a)
     """
 
-    def __init__(self, alpha=1, gamma=1, value_function=None):
+    def __init__(self, env: Env, alpha=1, gamma=1, value_function=None):
         """
 
         :param alpha: step-size-parameter in the update rule
         :param gamma: parameter in the update rule
         """
-        super().__init__()
+        super().__init__(env)
 
         # the value function is represented by a dict of dicts. State-action pairs are stored as
         # {state: {action: value}}. Non-visited state-action pairs are not stored and their

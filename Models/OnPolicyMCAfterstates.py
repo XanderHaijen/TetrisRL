@@ -1,11 +1,14 @@
 import pickle
 import random
 from typing import Callable
+
+from gym import Env
+
 from Models.Model import Model
 
 
 class OnPolicyMCAfterstates(Model):
-    def __init__(self, gamma: float = 1, value_function: dict = None, Q: dict = None, C: dict = None,
+    def __init__(self, env: Env, gamma: float = 1, value_function: dict = None, Q: dict = None, C: dict = None,
                  first_visit: bool = True) -> None:
         """
         Initializes a trainable Monte Carlo model using an afterstate value function.
@@ -18,7 +21,7 @@ class OnPolicyMCAfterstates(Model):
         :param gamma: Importance sampling factor.
         :ivar 0 < gamma < 1
         """
-        super().__init__()
+        super().__init__(env)
 
         # The value function, C and Q are represented by a dictionary. Non-visited states are not stored
         # and their values are initialized as zero. The max size of these dicts is thus num_states/

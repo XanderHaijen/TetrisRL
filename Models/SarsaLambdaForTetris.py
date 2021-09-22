@@ -1,11 +1,14 @@
 import pickle
 from typing import Callable
 import random
+
+from gym import Env
+
 from Models.Model import Model
 
 
 class SarsaLambdaForTetris(Model):
-    def __init__(self, Lambda: float, alpha: float, gamma: float, traces: str, value_function=None, eligibility=None):
+    def __init__(self, env: Env, Lambda: float, alpha: float, gamma: float, traces: str, value_function=None, eligibility=None):
         """
         Initializes a sarsa-control model with a Tetris environment
         :param Lambda: determines the amount of bootstrapping.
@@ -16,7 +19,7 @@ class SarsaLambdaForTetris(Model):
         :param value_function: a dict of dicts containing the value for each state-action pair. If none is provided
         it is initialized as Q(s,a) = 0 for all s, a
         """
-        super().__init__()
+        super().__init__(env)
 
         if eligibility is None:
             eligibility = {}

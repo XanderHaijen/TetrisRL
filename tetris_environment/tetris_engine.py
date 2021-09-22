@@ -6,13 +6,12 @@
 
 import random
 import time
+from abc import abstractmethod
 from math import sqrt
 
 FPS = 25
 BOXSIZE = 20
-BOARDWIDTH = 10
 BOARDHEIGHT = 20
-WINDOWWIDTH = BOXSIZE * BOARDWIDTH
 WINDOWHEIGHT = BOXSIZE * BOARDHEIGHT
 BLANK = '.'
 
@@ -148,18 +147,56 @@ T_SHAPE_TEMPLATE = [['..O..',
                      '.....',
                      '.....']]
 
-PIECES = {'S': S_SHAPE_TEMPLATE,
-          'Z': Z_SHAPE_TEMPLATE,
-          'J': J_SHAPE_TEMPLATE,
-          'L': L_SHAPE_TEMPLATE,
-          'I': I_SHAPE_TEMPLATE,
-          'O': O_SHAPE_TEMPLATE,
-          'T': T_SHAPE_TEMPLATE}
+SMALL_I_SHAPE_TEMPLATE = [['..O..',
+                           '..O..',
+                           '.....',
+                           '.....',
+                           '.....'],
+                          ['.OO..',
+                           '.....',
+                           '.....',
+                           '.....',
+                           '.....']]
+
+X_SHAPE_TEMPLATE = [['..O..',
+                     '...O.',
+                     '.....',
+                     '.....',
+                     '.....'],
+                    ['..O..',
+                     '.O...',
+                     '.....',
+                     '.....',
+                     '.....']]
 
 
-class TetrisGame:
-    def __init__(self, board=None):
+class UnrenderedTetrisGame:
+    def __init__(self, type: str, board=None,):
+        """
+        Initializes a Tetris game
+        :param type: indicates the size of the board and the pieces used.
+                'regular' is normal Tetris according to the official rules
+                'fourer' is Tetris on a board of width 4, with two 2-cell pieces: small I and X
+        :param board:
+        """
+        global PIECES, BOARDWIDTH, WINDOWWIDTH
         global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
+
+        if type == 'regular':
+            BOARDWIDTH = 10
+            PIECES = {'S': S_SHAPE_TEMPLATE,
+                      'Z': Z_SHAPE_TEMPLATE,
+                      'J': J_SHAPE_TEMPLATE,
+                      'L': L_SHAPE_TEMPLATE,
+                      'I': I_SHAPE_TEMPLATE,
+                      'O': O_SHAPE_TEMPLATE,
+                      'T': T_SHAPE_TEMPLATE}
+            WINDOWWIDTH = BOXSIZE * BOARDWIDTH
+        elif type == "fourer":
+            BOARDWIDTH = 4
+            PIECES = {'I': SMALL_I_SHAPE_TEMPLATE,
+                      'X': X_SHAPE_TEMPLATE}
+            WINDOWWIDTH = BOXSIZE * BOARDWIDTH
 
         # DEBUG
         self.total_lines = 0
@@ -190,6 +227,7 @@ class TetrisGame:
 
         self.frame_step([1, 0, 0, 0, 0, 0])
         self.pieces = PIECES
+
 
     def reinit(self):
         """
@@ -293,7 +331,7 @@ class TetrisGame:
                 terminal = True
 
                 self.reinit()
-                reward = -10  # penalty for game over
+                reward = -2000  # penalty for game over
                 data = {"score": self.score, "lines_cleared": self.total_lines, "new_piece": new_piece}
                 return None, reward, terminal, data  # can't fit a new piece on the self.board, so game over
 
@@ -359,7 +397,6 @@ class TetrisGame:
         reward = self.get_reward()
         return None, reward, terminal, data
 
-
     @staticmethod
     def get_action_set():
         return range(6)
@@ -406,6 +443,7 @@ class TetrisGame:
 
     def get_avg_height_diff(self):
         """
+        A column is only included in the calculation if its height is greater than zero
         :return: h_avg^t-h_avg^(t+1)
         """
         old_height = self.avg_height
@@ -417,7 +455,7 @@ class TetrisGame:
             if col_height > 0:
                 nb_used_columns += 1
 
-        avg_height_new = total_height / nb_used_columns
+        avg_height_new = total_height / nb_used_columns if nb_used_columns > 0 else 0
         avg_height_diff = old_height - avg_height_new
         self.avg_height = avg_height_new
 
@@ -515,10 +553,6 @@ class TetrisGame:
         """
         Return True if the piece is within the self.board and not colliding with any pieces other than
         the falling piece.
-        :param adjX:
-        :param adjY:
-        :param piece:
-        :return:
         """
         if piece is None:
             piece = self.fallingPiece
@@ -567,3 +601,7 @@ class TetrisGame:
         # Convert the given xy coordinates of the self.board to xy
         # coordinates of the location on the screen.
         return (XMARGIN + (boxx * BOXSIZE)), (TOPMARGIN + (boxy * BOXSIZE))
+
+    @abstractmethod
+    def get_image(self):
+        pass

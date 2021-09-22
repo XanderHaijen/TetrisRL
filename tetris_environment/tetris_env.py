@@ -1,25 +1,37 @@
 import copy
+import os
 
 import numpy as np
 import gym
+import pygame
 from gym import spaces
-from tetris_environment import tetris_engine as game
-from tetris_environment.tetris_engine import TetrisGame
+from tetris_environment.tetris_engine import UnrenderedTetrisGame
+from tetris_environment.rendering_tetris_engine import RenderingTetrisGame
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 200, 400
-
 
 class TetrisEnv(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self, low: int = -3, high: int = 3):
+    def __init__(self, type: str, render: bool = False, low: int = -3, high: int = 3):
+
+        if type not in ("fourer", 'regular'):
+            raise RuntimeError("Invalid Tetris type")
+
         # open up a game state to communicate with emulator
-        self.game_state = game.TetrisGame()
+        if render:
+            self.game_state = RenderingTetrisGame(type)
+            self.game_type = RenderingTetrisGame
+        else:
+            self.game_state = UnrenderedTetrisGame(type)
+            self.game_type = UnrenderedTetrisGame
+
         self._action_set = self.game_state.get_action_set()
         self.action_space = spaces.Discrete(len(self._action_set))
-        # self.observation_space = spaces.Box(low=0, high=255, shape=(SCREEN_WIDTH, SCREEN_HEIGHT, 3))
         self.observation_space = spaces.Box(low=low, high=high, shape=(9,), dtype=int)
         self.viewer = None
+        self.type = type
+        self.rendering = render
 
     def step(self, a):
         self._action_set = np.zeros([len(self._action_set)])
@@ -43,12 +55,16 @@ class TetrisEnv(gym.Env):
         return state
 
     def render(self, mode='human', close=False):
+
+        if not self.rendering:
+            return
+
         if close:
             if self.viewer is not None:
                 self.viewer.close()
                 self.viewer = None
             return
-        img = self.get_image()
+        img = self.game_state.get_image()
         if mode == 'rgb_array':
             return img
         elif mode == 'human':
@@ -107,7 +123,7 @@ class TetrisEnv(gym.Env):
             all_possible_placements = []
             for piece in all_possible_positions:
                 board = copy.deepcopy(self.game_state.board)
-                new_game = TetrisGame(board=board)
+                new_game = self.game_type(board=board, type=self.type)
                 new_game.fallingPiece = piece
                 action = self._get_actions(old_board=self.game_state, new_board=new_game)
                 move_down = np.zeros(6)
@@ -151,6 +167,3 @@ class TetrisEnv(gym.Env):
         actions.append(move_down)
 
         return actions
-
-    def get_image(self):
-        pass

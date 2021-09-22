@@ -1,12 +1,10 @@
 from abc import abstractmethod
 from typing import Callable
-
-from tetris_environment.tetris_env import TetrisEnv
-
+from gym import Env
 
 class Model:
-    def __init__(self):
-        self.env = TetrisEnv()
+    def __init__(self, env: Env):
+        self.env = env
 
     @abstractmethod
     def train(self, learning_rate: Callable[[int], float], nb_episodes: int = 1000, start_episode: int = 0) -> None:

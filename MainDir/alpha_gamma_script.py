@@ -4,7 +4,6 @@ import os
 import shutil
 import sys
 
-sys.path.append("/data/leuven/343/vsc34339/RLP")
 
 from Evaluation.train_and_test import train_and_test
 from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
@@ -39,7 +38,6 @@ def main(func_arg: SarsaZeroAfterStates) -> str:
 
     # Unpack func_args
     model: SarsaZeroAfterStates = func_arg
-    print(f"Starting model gamma:{model.gamma}, alpha: {model.alpha} at {datetime.datetime.now()}")
 
     name_path = os.path.join(path_to_scratch_dir, f"alpha_{model.alpha}_gamma_{model.gamma}")
     data_path = os.path.join(name_path, "Data")
