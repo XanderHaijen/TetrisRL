@@ -1,9 +1,10 @@
 from abc import abstractmethod
 from typing import Callable
-from gym import Env
+from tetris_environment.tetris_env import TetrisEnv
+
 
 class Model:
-    def __init__(self, env: Env):
+    def __init__(self, env: TetrisEnv):
         self.env = env
 
     @abstractmethod
@@ -31,5 +32,5 @@ class Model:
 
     @staticmethod
     @abstractmethod
-    def load(filename: str):
+    def load(filename: str, rendering: bool):
         pass

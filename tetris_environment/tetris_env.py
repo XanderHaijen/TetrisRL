@@ -19,12 +19,12 @@ class TetrisEnv(gym.Env):
             raise RuntimeError("Invalid Tetris type")
 
         # open up a game state to communicate with emulator
-        if render:
-            self.game_state = RenderingTetrisGame(type)
-            self.game_type = RenderingTetrisGame
-        else:
+        if not render:
             self.game_state = UnrenderedTetrisGame(type)
             self.game_type = UnrenderedTetrisGame
+        else:
+            self.game_state = RenderingTetrisGame(type)
+            self.game_type = RenderingTetrisGame
 
         self._action_set = self.game_state.get_action_set()
         self.action_space = spaces.Discrete(len(self._action_set))

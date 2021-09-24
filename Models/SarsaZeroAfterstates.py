@@ -6,6 +6,8 @@ from gym import Env
 from Models.Model import Model
 import pickle
 
+from tetris_environment.tetris_env import TetrisEnv
+
 
 class SarsaZeroAfterStates(Model):
     """
@@ -99,13 +101,14 @@ class SarsaZeroAfterStates(Model):
     def _load_file(filename: str):
         with open(filename, 'rb') as f:
             alpha, gamma, value_function = pickle.load(f)
-        return alpha, gamma, value_function
+        return alpha, gamma, value_function, "regular"
 
     @staticmethod
-    def load(filename: str):
-        alpha, gamma, value_function = SarsaZeroAfterStates._load_file(filename)
-        return SarsaZeroAfterStates(alpha=alpha, gamma=gamma, value_function=value_function)
+    def load(filename: str, rendering: bool = False):
+        alpha, gamma, value_function, size = SarsaZeroAfterStates._load_file(filename)
+        env = TetrisEnv(type=size)
+        return SarsaZeroAfterStates(alpha=alpha, gamma=gamma, value_function=value_function, env=env)
 
     def save(self, filename: str):
         with open(filename, 'wb') as f:
-            pickle.dump((self.alpha, self.gamma, self.value_function), f)
+            pickle.dump((self.alpha, self.gamma, self.value_function, self.env.type), f)

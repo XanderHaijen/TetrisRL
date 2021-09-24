@@ -11,7 +11,7 @@ def sarsa_zero_test():
         model.train(learning_rate=lambda x: 1 / (10 + log(1+x)), nb_episodes=100, start_episode=episodes_trained)
         episodes_trained += 1000
         print(f"Evaluation round {i + 1}")
-        metrics = Evaluate_policy.evaluate_policy(model, model.env, nb_episodes=50)
+        metrics = Evaluate_policy.evaluate_policy_afterstates(model, model.env, nb_episodes=50)
         print(metrics.mean())
         print(metrics.var())
     model.save(r"D:\Bibliotheken\Downloads\model.pickle")
@@ -19,7 +19,7 @@ def sarsa_zero_test():
 
 def render_view():
     model = SarsaLambdaForTetris.load(r"D:\Bibliotheken\Downloads\model.pickle")
-    Evaluate_policy.evaluate_policy(model, model.env, nb_episodes=20, render=True)
+    Evaluate_policy.evaluate_policy_afterstates(model, model.env, nb_episodes=20, render=True)
 
 
 render_view()

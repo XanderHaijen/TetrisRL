@@ -171,7 +171,7 @@ X_SHAPE_TEMPLATE = [['..O..',
 
 
 class UnrenderedTetrisGame:
-    def __init__(self, type: str, board=None,):
+    def __init__(self, type: str, board=None, ):
         """
         Initializes a Tetris game
         :param type: indicates the size of the board and the pieces used.
@@ -227,7 +227,6 @@ class UnrenderedTetrisGame:
 
         self.pieces = PIECES
         self.frame_step([1, 0, 0, 0, 0, 0])
-
 
     def reinit(self):
         """
@@ -498,9 +497,11 @@ class UnrenderedTetrisGame:
         """
         # Parameters as used in [Thiam, Kessler and Schwenker]
         ALPHA = 5
-        BETA = 16
+        BETA = 10
         GAMMA = 1
-        reward = ALPHA * self.get_avg_height_diff() + BETA * self.get_holes_diff() + GAMMA * self.get_bumpiness_diff()
+        DELTA = 5
+        reward = ALPHA * self.get_avg_height_diff() + BETA * self.get_holes_diff() + \
+            GAMMA * self.get_bumpiness_diff() + DELTA * self.score
 
         return reward
 

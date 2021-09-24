@@ -48,7 +48,7 @@ def train_and_test(model: Model,
         model.train(learning_rate, training_size, episodes_trained)
         episodes_trained += training_size
         print(f"starting evaluations round {i} at {datetime.datetime.now()}")
-        metrics = Evaluate_policy.evaluate_policy(model, model.env, eval_size)
+        metrics = Evaluate_policy.evaluate_policy_afterstates(model, model.env, eval_size)
         mean = metrics.mean()
         if not reached_200 and mean["Score"] > 200:
             t1 = time.perf_counter()
