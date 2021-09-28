@@ -1,5 +1,6 @@
 import copy
 import os
+import random
 
 import numpy as np
 import gym
@@ -9,6 +10,7 @@ from tetris_environment.tetris_engine import UnrenderedTetrisGame
 from tetris_environment.rendering_tetris_engine import RenderingTetrisGame
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 200, 400
+
 
 class TetrisEnv(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array']}
@@ -86,7 +88,7 @@ class TetrisEnv(gym.Env):
             board = self.game_state
 
         board_width = board.board_width
-        state = [0 for _ in range(board_width - 1)]  # tuple of zeroes
+        state = [0 for _ in range(board_width - 1)]  # list of zeroes
 
         low = -3
         high = 3
@@ -99,7 +101,7 @@ class TetrisEnv(gym.Env):
                 height_diff = high
             state[i] = height_diff
 
-        return tuple(state)
+        return tuple(state)  # finally, convert to hashable type, i.e. tuple
 
     def all_possible_placements(self):
         """
@@ -112,14 +114,14 @@ class TetrisEnv(gym.Env):
 
         piece = self.game_state.fallingPiece
         if piece is not None:
-            for width in range(self.game_state.board_width):
+            for width in range(-4, self.game_state.board_width + 4):
                 shape = piece['shape']
                 for rotation in range(len(self.game_state.pieces.get(shape))):
                     new_piece = copy.deepcopy(piece)
                     new_piece['x'] = width
                     new_piece['rotation'] = rotation
                     if self.game_state.is_valid_position(piece=new_piece):
-                        all_possible_positions.append(new_piece)
+                        all_possible_positions.insert(random.randint(0, len(all_possible_positions)), new_piece)
 
             all_possible_placements = []
             for piece in all_possible_positions:

@@ -1,14 +1,14 @@
 import time
 import matplotlib.pyplot as plt
 import pandas as pd
-from Models.Model import Model
+from Models.StateValueModel import StateValueModel
 from gym import Env
 
 
-def evaluate_policy_afterstates(algorithm: Model, env: Env, nb_episodes: int) -> pd.DataFrame():
+def evaluate_policy_afterstates(algorithm: StateValueModel, env: Env, nb_episodes: int) -> pd.DataFrame():
     """
 
-    :param algorithm: of type Model: provides the policy to follow
+    :param algorithm: of type StateValueModel: provides the policy to follow
     :param env: the environment in which to test the provided :param algorithm
     :param nb_episodes: number of evaluation episodes
     :return: returns the mean and variance of number of pieces placed, number of lines cleared and score achieved
@@ -40,9 +40,9 @@ def evaluate_policy_afterstates(algorithm: Model, env: Env, nb_episodes: int) ->
     return metrics_df
 
 
-def evaluate_policy_state_action(algorithm: Model, env: Env, nb_episodes: int) -> pd.DataFrame():
+def evaluate_policy_state_action(algorithm: StateValueModel, env: Env, nb_episodes: int) -> pd.DataFrame():
     """
-    :param algorithm: of type Model: provides the policy to follow
+    :param algorithm: of type StateValueModel: provides the policy to follow
     :param env: the environment in which to test the provided :param algorithm
     :param nb_episodes: number of evaluation episodes
     :return: returns the mean and variance of number of pieces placed, number of lines cleared and score achieved

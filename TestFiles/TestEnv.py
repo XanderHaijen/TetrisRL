@@ -6,4 +6,5 @@ from tetris_environment.tetris_env import TetrisEnv
 from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
 
 model = SarsaZeroAfterStates(env=TetrisEnv(type='fourer', render=False))
-render_policy_afterstates(model, TetrisEnv(type='fourer', render=True), 5)
+model.train(learning_rate=lambda x: 0.001, nb_episodes=100, start_episode=0)
+render_policy_afterstates(model, TetrisEnv(type='fourer', render=True), 10)

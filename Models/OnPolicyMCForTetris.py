@@ -4,10 +4,10 @@ from typing import Callable
 
 from gym import Env
 
-from Models.Model import Model
+from Models.StateValueModel import StateValueModel
 
 
-class OnPolicyMCForTetris(Model):
+class OnPolicyMCForTetris(StateValueModel):
     def __init__(self, env=Env, gamma: float = 1, value_function: dict = None, Q: dict = None, C: dict = None,
                  first_visit: bool = True) -> None:
         """
@@ -130,7 +130,7 @@ class OnPolicyMCForTetris(Model):
             f.close()
 
     @staticmethod
-    def load(filename: str) -> Model:
+    def load(filename: str) -> StateValueModel:
         with open(filename, 'rb') as f:
             value_func, C, Q, first_visit = pickle.load(f)
             f.close()

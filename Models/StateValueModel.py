@@ -3,7 +3,7 @@ from typing import Callable
 from tetris_environment.tetris_env import TetrisEnv
 
 
-class Model:
+class StateValueModel:
     def __init__(self, env: TetrisEnv):
         self.env = env
 

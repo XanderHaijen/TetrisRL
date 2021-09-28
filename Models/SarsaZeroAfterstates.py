@@ -1,20 +1,16 @@
 import random
-from typing import Callable, List
-
-from gym import Env
-
-from Models.Model import Model
+from typing import Callable, Tuple
 import pickle
-
 from tetris_environment.tetris_env import TetrisEnv
+from Models.AfterstateModel import AfterstateModel
 
 
-class SarsaZeroAfterStates(Model):
+class SarsaZeroAfterStates(AfterstateModel):
     """
     A Sarsa model working with an afterstate value function V(S')
     """
 
-    def __init__(self, env: Env, alpha: float = 1, gamma: float = 1, value_function: dict = None):
+    def __init__(self, env: TetrisEnv, alpha: float = 1, gamma: float = 1, value_function: dict = None):
         """
 
         :param alpha: step-size-parameter in the update rule
@@ -43,59 +39,58 @@ class SarsaZeroAfterStates(Model):
         """
         for episode in range(1, nb_episodes + 1):
             state = self.env.reset()
-            actions = self._epsilon_greedy_action(learning_rate, episode + start_episode, board=self.env.game_state)
+            afterstate, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
 
             done = False
             while not done:
-                old_state = state
                 reward = 0
                 for action in actions:
                     # take action a, observe R and s' until the piece has reached the bottom
                     state, reward, done, obs = self.env.step(action)
+                    self.env.render()
 
-                actions = self._epsilon_greedy_action(learning_rate, episode + start_episode,
-                                                      board=self.env.game_state)
+                afterstate, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
 
                 # update value function at V(s)
-                value_at_next_state = self.value_function.get(state, 0)
-                old_value = self.value_function.get(old_state, 0)
-                new_value = old_value + self.alpha * (reward + self.gamma + value_at_next_state - old_value)
+                value_at_next_state = self.value_function.get(afterstate, 0)
+                old_value = self.value_function.get(state, 0)
+                new_value = old_value + self.alpha * (reward + self.gamma * value_at_next_state - old_value)
                 self.value_function.update({state: new_value})
 
-    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes: int, board):
+    def _epsilon_greedy_actions(self, learning_rate: Callable[[int], float], nb_episodes: int) -> \
+            Tuple[tuple, list]:
         """
         Returns either a random set of actions leading to a random next board state, or a sequence of actions
         leading to the most favourable afterstate.
         :param learning_rate:
         :param nb_episodes:
         :param board:
-        :return:
+        :return: a tuple of the form (afterstate, actions)
         """
         if random.random() < learning_rate(nb_episodes):
-            return self._pick_random_action()
+            return self._pick_random_actions()
         else:  # take greedy action
-            return self.predict(board)
+            return self.predict()
 
     def _nb_actions(self) -> int:
         return len(self.env.game_state.get_action_set())
 
-    def _pick_random_action(self):
+    def _pick_random_actions(self) -> Tuple[tuple, list]:
         possible_placements = self.env.all_possible_placements()
         if len(possible_placements) > 0:
-            afterstate, action = random.choice(possible_placements)
+            placement = random.choice(possible_placements)  # consists of afterstate and action
         else:
-            action = []  # no piece, so no action
-        return action
+            placement = (self.env.get_encoded_state(), [0])  # no piece, so no action
+        return placement
 
-    def predict(self, board) -> list:
+    def predict(self) -> Tuple[tuple, list]:
         possible_placements = self.env.all_possible_placements()
         # possible_placements of form (state, action)
         if len(possible_placements) > 0:
             best_placement = max(possible_placements, key=lambda pl: self.value_function.get(pl[0], 0))
-            a_star = best_placement[1]
         else:
-            a_star = []  # no piece, so no action
-        return a_star
+            best_placement = (self.env.get_encoded_state(), [0])  # no piece, so no action
+        return best_placement
 
     @staticmethod
     def _load_file(filename: str):

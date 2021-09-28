@@ -132,8 +132,8 @@ L_SHAPE_TEMPLATE = [['...O.',
                      '.....',
                      '.....']]
 
-SMALL_L_SHAPE_TEMPLATE = [['...O.',
-                           '..OO.',
+SMALL_L_SHAPE_TEMPLATE = [['..O..',
+                           '.OO..',
                            '.....',
                            '.....',
                            '.....'],
@@ -185,8 +185,8 @@ SMALL_I_SHAPE_TEMPLATE = [['..O..',
                            '.....',
                            '.....']]
 
-X_SHAPE_TEMPLATE = [['..O..',
-                     '...O.',
+X_SHAPE_TEMPLATE = [['.O...',
+                     '..O..',
                      '.....',
                      '.....',
                      '.....'],

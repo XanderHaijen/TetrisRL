@@ -4,10 +4,10 @@ import random
 
 from gym import Env
 
-from Models.Model import Model
+from Models.StateValueModel import StateValueModel
 
 
-class SarsaLambdaForTetris(Model):
+class SarsaLambdaForTetris(StateValueModel):
     def __init__(self, env: Env, Lambda: float, alpha: float, gamma: float, traces: str, value_function=None, eligibility=None):
         """
         Initializes a sarsa-control model with a Tetris environment
@@ -147,7 +147,7 @@ class SarsaLambdaForTetris(Model):
             f.close()
 
     @staticmethod
-    def load(filename: str) -> Model:
+    def load(filename: str) -> StateValueModel:
         with open(filename, 'rb') as f:
             gamma, alpha, Lambda, value_function, eligibility, traces = pickle.load(f)
             f.close()

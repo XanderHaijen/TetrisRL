@@ -1,12 +1,12 @@
 import random
 from typing import Callable
-from Models.Model import Model
+from Models.StateValueModel import StateValueModel
 import pickle
 
 from tetris_environment.tetris_env import TetrisEnv
 
 
-class SarsaZeroForTetris(Model):
+class SarsaZeroForTetris(StateValueModel):
     """
     A Sarsa model working with a state-action value function Q(s,a)
     """

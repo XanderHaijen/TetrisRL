@@ -1,14 +1,12 @@
 import pickle
 import random
 from typing import Callable
-
-from gym import Env
-
-from Models.Model import Model
+from Models.AfterstateModel import AfterstateModel
+from tetris_environment.tetris_env import TetrisEnv
 
 
-class OnPolicyMCAfterstates(Model):
-    def __init__(self, env: Env, gamma: float = 1, value_function: dict = None, Q: dict = None, C: dict = None,
+class OnPolicyMCAfterstates(AfterstateModel):
+    def __init__(self, env: TetrisEnv, gamma: float = 1, value_function: dict = None, Q: dict = None, C: dict = None,
                  first_visit: bool = True) -> None:
         """
         Initializes a trainable Monte Carlo model using an afterstate value function.
@@ -58,7 +56,7 @@ class OnPolicyMCAfterstates(Model):
                 visited_afterstates = set()  # set of every s' visited in the episode
 
                 # Take first action
-                actions = self._epsilon_greedy_action(learning_rate, episode + start_episode, state)
+                actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode, state)
                 done = False
 
                 # play entire episode
@@ -90,10 +88,10 @@ class OnPolicyMCAfterstates(Model):
                 for visited_state in visited_afterstates:
                     self.value_function.update({visited_state: self.Q[visited_state]})
 
-    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes: int, state):
+    def _epsilon_greedy_actions(self, learning_rate: Callable[[int], float], nb_episodes: int, state):
         epsilon = learning_rate(nb_episodes)
         if random.random() <= epsilon:
-            return self._pick_random_action()
+            return self._pick_random_actions()
         else:
             return self.predict(state)
 
@@ -108,7 +106,7 @@ class OnPolicyMCAfterstates(Model):
             a_star = (0, )  # no piece, so no action
         return a_star
 
-    def _pick_random_action(self):
+    def _pick_random_actions(self):
         possible_placements = self.env.all_possible_placements()
         if len(possible_placements) > 0:
             _, action = random.choice(possible_placements)
@@ -122,7 +120,7 @@ class OnPolicyMCAfterstates(Model):
             f.close()
 
     @staticmethod
-    def load(filename: str) -> Model:
+    def load(filename: str) -> StateValueModel:
         with open(filename, 'rb') as f:
             value_func, C, Q, first_visit = pickle.load(f)
             f.close()

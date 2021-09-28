@@ -56,7 +56,7 @@ def main(func_args: tuple) -> str:
     # Construct unique paths
     name_path = os.path.join(path_to_scratch_dir, name)
     data_path = os.path.join(name_path, "DataAndPlots")
-    model_dir = os.path.join(name_path, "Model")
+    model_dir = os.path.join(name_path, "StateValueModel")
 
     # and make the necessary directories
     os.mkdir(name_path)
@@ -71,7 +71,7 @@ def main(func_args: tuple) -> str:
                    data_path,
                    10, 10, 10)
 
-    return f"Model {name} done"
+    return f"StateValueModel {name} done"
 
 
 if __name__ == '__main__':

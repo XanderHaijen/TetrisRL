@@ -42,7 +42,7 @@ def main(func_arg: SarsaZeroAfterStates) -> str:
 
     name_path = os.path.join(path_to_scratch_dir, f"{model.env.type}_alpha_{model.alpha}_gamma_{model.gamma}")
     data_path = os.path.join(name_path, "Data")
-    model_dir = os.path.join(name_path, "Model")
+    model_dir = os.path.join(name_path, "StateValueModel")
 
     if os.path.isdir(name_path):
         shutil.rmtree(name_path)
@@ -59,7 +59,7 @@ def main(func_arg: SarsaZeroAfterStates) -> str:
                    data_path,
                    10, 5, 10)
 
-    return f"Model gamma:{model.gamma} alpha:{model.alpha} done at {datetime.datetime.now()}"
+    return f"StateValueModel gamma:{model.gamma} alpha:{model.alpha} done at {datetime.datetime.now()}"
 
 
 for arg in args:

@@ -1,13 +1,13 @@
 import pickle
 from typing import Callable
 from Evaluation import Evaluate_policy
-from Models.Model import Model
+from Models.StateValueModel import StateValueModel
 import os
 import datetime
 import time
 
 
-def train_and_test(model: Model,
+def train_and_test(model: StateValueModel,
                    learning_rate: Callable[[int], float],
                    model_path: str,
                    metrics_dir: str,
