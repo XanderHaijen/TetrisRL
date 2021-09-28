@@ -20,7 +20,7 @@ class RenderingTetrisGame(UnrenderedTetrisGame):
         BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
         pygame.display.iconify()
         pygame.display.set_caption('Tetromino')
-        super().__init__(type)
+        super().__init__(type, board)
 
     def reinit(self):
         """

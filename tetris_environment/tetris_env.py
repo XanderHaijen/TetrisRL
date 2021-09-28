@@ -25,6 +25,7 @@ class TetrisEnv(gym.Env):
         else:
             self.game_state = RenderingTetrisGame(type)
             self.game_type = RenderingTetrisGame
+            # raise RuntimeError()
 
         self._action_set = self.game_state.get_action_set()
         self.action_space = spaces.Discrete(len(self._action_set))
@@ -111,7 +112,7 @@ class TetrisEnv(gym.Env):
 
         piece = self.game_state.fallingPiece
         if piece is not None:
-            for width in range(1, 11):
+            for width in range(self.game_state.board_width):
                 shape = piece['shape']
                 for rotation in range(len(self.game_state.pieces.get(shape))):
                     new_piece = copy.deepcopy(piece)
@@ -125,14 +126,13 @@ class TetrisEnv(gym.Env):
                 board = copy.deepcopy(self.game_state.board)
                 new_game = self.game_type(board=board, type=self.type)
                 new_game.fallingPiece = piece
-                action = self._get_actions(old_board=self.game_state, new_board=new_game)
+                actions = self._get_actions(old_board=self.game_state, new_board=new_game)
                 move_down = np.zeros(6)
                 move_down[4] = 1
                 new_game.frame_step(move_down)
                 state = self.get_encoded_state(new_game)
-                all_possible_placements.append((state, action))
+                all_possible_placements.append((state, actions))
 
-            del new_game
             return all_possible_placements
         else:
             return []
@@ -140,7 +140,6 @@ class TetrisEnv(gym.Env):
     @staticmethod
     def _get_actions(old_board, new_board):
         # Define actions
-        no_move = 0
         move_left = 1
         move_right = 3
         move_down = 4
@@ -150,19 +149,21 @@ class TetrisEnv(gym.Env):
 
         curr_piece = old_board.fallingPiece
         target_piece = new_board.fallingPiece
+        
         assert curr_piece['shape'] == target_piece['shape']
 
         if curr_piece['rotation'] != target_piece['rotation']:
             for _ in range(abs(curr_piece["rotation"] - target_piece["rotation"])):
                 actions.append(rotate_clockwise)
-        elif curr_piece['x'] < target_piece['x']:
+        if curr_piece['x'] < target_piece['x']:
             for _ in range(target_piece['x'] - curr_piece['x']):
                 actions.append(move_right)
-        elif curr_piece['x'] > target_piece['x']:
+        if curr_piece['x'] > target_piece['x']:
             for _ in range(curr_piece['x'] - target_piece['x']):
                 actions.append(move_left)
-        else:  # piece placements are identical
-            actions = [no_move]
+        if len(actions) == 0:
+            # piece placements are identical, so no actions are added.
+            pass
 
         actions.append(move_down)
 

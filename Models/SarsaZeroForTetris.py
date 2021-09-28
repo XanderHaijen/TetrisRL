@@ -1,10 +1,9 @@
 import random
 from typing import Callable
-
-from gym import Env
-
 from Models.Model import Model
 import pickle
+
+from tetris_environment.tetris_env import TetrisEnv
 
 
 class SarsaZeroForTetris(Model):
@@ -12,7 +11,7 @@ class SarsaZeroForTetris(Model):
     A Sarsa model working with a state-action value function Q(s,a)
     """
 
-    def __init__(self, env: Env, alpha=1, gamma=1, value_function=None):
+    def __init__(self, env: TetrisEnv, alpha=1, gamma=1, value_function=None):
         """
 
         :param alpha: step-size-parameter in the update rule
@@ -102,14 +101,14 @@ class SarsaZeroForTetris(Model):
     @staticmethod
     def _load_file(filename: str):
         with open(filename, 'rb') as f:
-            alpha, gamma, value_function = pickle.load(f)
-        return alpha, gamma, value_function
+            alpha, gamma, type, value_function = pickle.load(f)
+        return alpha, type, gamma, value_function
 
     @staticmethod
-    def load(filename: str):
-        alpha, gamma, value_function = SarsaZeroForTetris._load_file(filename)
-        return SarsaZeroForTetris(alpha=alpha, gamma=gamma, value_function=value_function)
+    def load(filename: str, rendering: bool = False):
+        alpha, gamma, type, value_function = SarsaZeroForTetris._load_file(filename)
+        return SarsaZeroForTetris(TetrisEnv(type, rendering), alpha, gamma, value_function)
 
     def save(self, filename: str):
         with open(filename, 'wb') as f:
-            pickle.dump((self.alpha, self.gamma, self.value_function), f)
+            pickle.dump((self.alpha, self.gamma, self.env.type, self.value_function), f)

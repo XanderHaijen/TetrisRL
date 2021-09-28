@@ -84,6 +84,12 @@ O_SHAPE_TEMPLATE = [['.OO..',
                      '.....',
                      '.....']]
 
+SMALL_O_SHAPE_TEMPLATE = [['.O...',
+                           '.....',
+                           '.....',
+                           '.....',
+                           '.....']]
+
 J_SHAPE_TEMPLATE = [['.O...',
                      '.OOO.',
                      '.....',
@@ -125,6 +131,27 @@ L_SHAPE_TEMPLATE = [['...O.',
                      '..O..',
                      '.....',
                      '.....']]
+
+SMALL_L_SHAPE_TEMPLATE = [['...O.',
+                           '..OO.',
+                           '.....',
+                           '.....',
+                           '.....'],
+                          ['..O..',
+                           '..OO.',
+                           '.....',
+                           '.....',
+                           '.....'],
+                          ['..OO.',
+                           '..O..',
+                           '.....',
+                           '.....',
+                           '.....'],
+                          ['.OO..',
+                           '..O..',
+                           '.....',
+                           '.....',
+                           '.....']]
 
 T_SHAPE_TEMPLATE = [['..O..',
                      '.OOO.',
@@ -171,7 +198,7 @@ X_SHAPE_TEMPLATE = [['..O..',
 
 
 class UnrenderedTetrisGame:
-    def __init__(self, type: str, board=None, ):
+    def __init__(self, type: str, board=None):
         """
         Initializes a Tetris game
         :param type: indicates the size of the board and the pieces used.
@@ -197,6 +224,15 @@ class UnrenderedTetrisGame:
             PIECES = {'I': SMALL_I_SHAPE_TEMPLATE,
                       'X': X_SHAPE_TEMPLATE}
             WINDOWWIDTH = BOXSIZE * BOARDWIDTH
+        elif type == "extended fourer":
+            BOARDWIDTH = 4
+            PIECES = {'I': SMALL_I_SHAPE_TEMPLATE,
+                      'X': X_SHAPE_TEMPLATE,
+                      'O': O_SHAPE_TEMPLATE,
+                      'o': SMALL_O_SHAPE_TEMPLATE,
+                      'L': SMALL_L_SHAPE_TEMPLATE}
+        else:
+            raise RuntimeError("Unsupported Tetris type")
 
         # DEBUG
         self.total_lines = 0
@@ -207,7 +243,10 @@ class UnrenderedTetrisGame:
         self.bumpiness = 0
 
         # setup variables for the start of the game
-        self.board = self.get_blank_board() if board is None else board
+        if board is not None:
+            self.board = board
+        else:
+            self.board = self.get_blank_board()
         self.lastMoveDownTime = time.time()
         self.lastMoveSidewaysTime = time.time()
         self.lastFallTime = time.time()
@@ -501,7 +540,7 @@ class UnrenderedTetrisGame:
         GAMMA = 1
         DELTA = 5
         reward = ALPHA * self.get_avg_height_diff() + BETA * self.get_holes_diff() + \
-            GAMMA * self.get_bumpiness_diff() + DELTA * self.score
+                 GAMMA * self.get_bumpiness_diff()
 
         return reward
 

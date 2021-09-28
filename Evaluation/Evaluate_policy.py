@@ -30,12 +30,11 @@ def evaluate_policy_afterstates(algorithm: Model, env: Env, nb_episodes: int) ->
             actions = algorithm.predict(state)
             for action in actions:
                 state, reward, done, data = env.step(action)
+                total_cleared += data["lines_cleared"]
             nb_pieces += 1
-            total_cleared += data["lines_cleared"]
 
-        lines_cleared = data.get("lines_cleared", 0)
         score = data.get("score", 0)
-        metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": lines_cleared, "Score": score})
+        metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": total_cleared, "Score": score})
 
     metrics_df = pd.DataFrame.from_records(metrics)
     return metrics_df
@@ -68,12 +67,12 @@ def evaluate_policy_state_action(algorithm: Model, env: Env, nb_episodes: int) -
                 nb_pieces += 1
             total_cleared += data["lines_cleared"]
 
-        lines_cleared = data.get("lines_cleared", 0)
         score = data.get("score", 0)
-        metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": lines_cleared, "Score": score})
+        metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": total_cleared, "Score": score})
 
     metrics_df = pd.DataFrame.from_records(metrics)
     return metrics_df
+
 
 def plot_with_errors(x_sequence, y_sequence, name, image_path, fig_nb) -> None:
     """

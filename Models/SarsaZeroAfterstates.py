@@ -1,5 +1,5 @@
 import random
-from typing import Callable
+from typing import Callable, List
 
 from gym import Env
 
@@ -84,29 +84,29 @@ class SarsaZeroAfterStates(Model):
         if len(possible_placements) > 0:
             afterstate, action = random.choice(possible_placements)
         else:
-            action = (0,)  # no piece, no action
+            action = []  # no piece, so no action
         return action
 
-    def predict(self, board):
+    def predict(self, board) -> list:
         possible_placements = self.env.all_possible_placements()
         # possible_placements of form (state, action)
         if len(possible_placements) > 0:
             best_placement = max(possible_placements, key=lambda pl: self.value_function.get(pl[0], 0))
             a_star = best_placement[1]
         else:
-            a_star = (0,)  # no piece, so no action
+            a_star = []  # no piece, so no action
         return a_star
 
     @staticmethod
     def _load_file(filename: str):
         with open(filename, 'rb') as f:
-            alpha, gamma, value_function = pickle.load(f)
-        return alpha, gamma, value_function, "regular"
+            alpha, gamma, value_function, size = pickle.load(f)
+        return alpha, gamma, value_function, size
 
     @staticmethod
     def load(filename: str, rendering: bool = False):
         alpha, gamma, value_function, size = SarsaZeroAfterStates._load_file(filename)
-        env = TetrisEnv(type=size)
+        env = TetrisEnv(type=size, render=rendering)
         return SarsaZeroAfterStates(alpha=alpha, gamma=gamma, value_function=value_function, env=env)
 
     def save(self, filename: str):
