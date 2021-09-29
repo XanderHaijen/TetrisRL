@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 
+sys.path.append("/data/leuven/343/vsc34339/RLP")
 
 from Evaluation.train_and_test import train_and_test
 from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
