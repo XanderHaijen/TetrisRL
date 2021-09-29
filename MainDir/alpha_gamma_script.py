@@ -11,11 +11,8 @@ from tetris_environment.tetris_env import TetrisEnv
 
 args = []
 
-path_to_scratch_dir = "/scratch/leuven/343/vsc34339/RLData"
 path_to_data_dir = "/data/leuven/343/vsc34339/RLData"
-#
-path_to_scratch_dir = r"D:\Bibliotheken\Downloads\RLData"
-path_to_data_dir = r"D:\Bibliotheken\OneDrive\Documenten\RLData"
+
 
 # This file will train and test several combinations of alpha and gamma using a Sarsa(0) model
 alpha_values = [0.05]
@@ -35,12 +32,12 @@ def main(func_arg: SarsaZeroAfterStates) -> str:
 
     # all with the same learning rate of epsilon
     def epsilon(x: int) -> float:
-        return 0.01 if x < 5000 else 0.001
+        return 0.001
 
     # Unpack func_args
     model: SarsaZeroAfterStates = func_arg
 
-    name_path = os.path.join(path_to_scratch_dir, f"{model.env.type}_alpha_{model.alpha}_gamma_{model.gamma}")
+    name_path = os.path.join(path_to_data_dir, f"{model.env.type}_alpha_{model.alpha}_gamma_{model.gamma}")
     data_path = os.path.join(name_path, "Data")
     model_dir = os.path.join(name_path, "StateValueModel")
 

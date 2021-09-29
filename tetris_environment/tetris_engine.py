@@ -369,8 +369,8 @@ class UnrenderedTetrisGame:
                 terminal = True
 
                 self.reinit()
-                reward = -2000  # penalty for game over
-                data = {"score": self.score, "lines_cleared": self.total_lines, "new_piece": new_piece}
+                reward = -1000  # penalty for game over
+                data = {"score": 0, "lines_cleared": self.total_lines, "new_piece": new_piece}
                 return None, reward, terminal, data  # can't fit a new piece on the self.board, so game over
 
         # moving the piece sideways
@@ -402,6 +402,7 @@ class UnrenderedTetrisGame:
         # let the piece fall if it is time to fall
         # see if the piece has landed
         cleared = 0
+        extra_score = 0
         if not self.is_valid_position(adjY=1):
             # falling piece has landed, set it on the self.board
             self.add_to_board()
@@ -409,16 +410,16 @@ class UnrenderedTetrisGame:
             cleared = self.remove_complete_lines()
             if cleared > 0:
                 if cleared == 1:
-                    self.score += 40 * self.level
+                    extra_score = 40 * self.level
                 elif cleared == 2:
-                    self.score += 100 * self.level
+                    extra_score = 100 * self.level
                 elif cleared == 3:
-                    self.score += 300 * self.level
+                    extra_score = 300 * self.level
                 elif cleared == 4:
-                    self.score += 1200 * self.level
+                    extra_score += 1200 * self.level
 
-            self.score += self.fallingPiece['y']
-
+            extra_score += self.fallingPiece['y']
+            self.score += extra_score
             self.lines += cleared
             self.total_lines += cleared
 
@@ -431,7 +432,7 @@ class UnrenderedTetrisGame:
             # piece did not land, just move the piece down
             self.fallingPiece['y'] += 1
 
-        data = {"score": self.score, "lines_cleared": cleared, "new_piece": new_piece}
+        data = {"score": extra_score, "lines_cleared": cleared, "new_piece": new_piece}
         reward = self.get_reward()
         return None, reward, terminal, data
 

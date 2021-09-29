@@ -1,13 +1,14 @@
 import pickle
-from typing import Callable
+from typing import Callable, Union
 from Evaluation import Evaluate_policy
+from Models.AfterstateModel import AfterstateModel
 from Models.StateValueModel import StateValueModel
 import os
 import datetime
 import time
 
 
-def train_and_test(model: StateValueModel,
+def train_and_test(model: Union[StateValueModel, AfterstateModel],
                    learning_rate: Callable[[int], float],
                    model_path: str,
                    metrics_dir: str,
@@ -33,7 +34,7 @@ def train_and_test(model: StateValueModel,
     :param training_size: the length of one training session in episodes
     :param nb_training_sessions: the amount of sessions of length :param training_size
     :param eval_size: the amount of episodes the policy is evaluated each time
-    :return: the evaluation data for nbs_pieces and the score.
+    :return: None
     All computed values, including the returns, are saved to file.
     """
     print("starting train and test")
@@ -47,8 +48,12 @@ def train_and_test(model: StateValueModel,
         print(f"starting training round {i} at {datetime.datetime.now()}")
         model.train(learning_rate, training_size, episodes_trained)
         episodes_trained += training_size
+
         print(f"starting evaluations round {i} at {datetime.datetime.now()}")
-        metrics = Evaluate_policy.evaluate_policy_afterstates(model, model.env, eval_size)
+        if isinstance(model, AfterstateModel):
+            metrics = Evaluate_policy.evaluate_policy_afterstates(model, model.env, eval_size)
+        else:  # if isinstance(model, StateValueModel):
+            metrics = Evaluate_policy.evaluate_policy_state_action(model, model.env, eval_size)
         mean = metrics.mean()
         if not reached_200 and mean["Score"] > 200:
             t1 = time.perf_counter()
@@ -60,6 +65,7 @@ def train_and_test(model: StateValueModel,
         scores.append((mean["Score"], std_dev["Score"]))
         nbs_pieces.append((mean["Nb_pieces"], std_dev["Nb_pieces"]))
         episodes.append(episodes_trained)
+
         model.save(model_path)
         print(f"ending round {i} at {datetime.datetime.now()}. Average score is {mean['Score']}.")
 

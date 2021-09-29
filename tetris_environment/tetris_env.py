@@ -1,6 +1,7 @@
 import copy
 import os
 import random
+from typing import Tuple
 
 import numpy as np
 import gym
@@ -36,7 +37,19 @@ class TetrisEnv(gym.Env):
         self.type = type
         self.rendering = render
 
-    def step(self, a):
+    def step(self, a: int) -> Tuple[tuple, float, bool, dict]:
+        """
+        Takes one step in the environment using the defined action a
+        :param a: the action to take
+        :return: a 4-tuple consisting of
+                • the current encoded state (see get_encoded_state())
+                • the reward received
+                • whether or not the end of an epîsode has been reached
+                • several observations with their own labels
+                    - label "score" (int): the total score received during this step and this step alone
+                    - label "new_piece (bool): is True when a new falling piece was added to the board
+                    - label "lines_cleared" (int): the total amount of lines cleared during this step
+        """
         self._action_set = np.zeros([len(self._action_set)])
         self._action_set[a] = 1
         _, reward, terminal, observations = self.game_state.frame_step(self._action_set)

@@ -1,11 +1,13 @@
 import time
 import matplotlib.pyplot as plt
 import pandas as pd
+
+from Models.AfterstateModel import AfterstateModel
 from Models.StateValueModel import StateValueModel
 from gym import Env
 
 
-def evaluate_policy_afterstates(algorithm: StateValueModel, env: Env, nb_episodes: int) -> pd.DataFrame():
+def evaluate_policy_afterstates(algorithm: AfterstateModel, env: Env, nb_episodes: int) -> pd.DataFrame():
     """
 
     :param algorithm: of type StateValueModel: provides the policy to follow
@@ -19,22 +21,22 @@ def evaluate_policy_afterstates(algorithm: StateValueModel, env: Env, nb_episode
 
     metrics = []
     for episode in range(1, nb_episodes + 1):
+        total_score = 0
+        total_cleared = 0
+        nb_pieces = 0
         state = env.reset()
         done = False
-        nb_pieces = 0
-        j = 0
-        data = {}
-        total_cleared = 0
         while not done:
-            j += 1
-            actions = algorithm.predict(state)
+            _, actions = algorithm.predict()
             for action in actions:
                 state, reward, done, data = env.step(action)
+                if done:
+                    break
                 total_cleared += data["lines_cleared"]
+                total_score += data["score"]
             nb_pieces += 1
 
-        score = data.get("score", 0)
-        metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": total_cleared, "Score": score})
+        metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": total_cleared, "Score": total_score})
 
     metrics_df = pd.DataFrame.from_records(metrics)
     return metrics_df

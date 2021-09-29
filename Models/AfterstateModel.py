@@ -34,8 +34,8 @@ class AfterstateModel:
     def save(self, filename: str) -> None:
         pass
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def _load_file(filename: str):
         pass
 
