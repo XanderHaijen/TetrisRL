@@ -9,6 +9,10 @@ from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
 # model.train(learning_rate=lambda x: 0.001, nb_episodes=100, start_episode=0)
 # render_policy_afterstates(model, TetrisEnv(type='fourer', render=True), 10)
 
-model = SarsaZeroAfterStates.load(filename=r"C:\Users\xande\Downloads\fourer_alpha_0.05_gamma_0.9\StateValueModel\model.pickle",
-                                  rendering=True)
-render_policy_afterstates(model, model.env, 10)
+# model = SarsaZeroAfterStates.load(filename=r"C:\Users\xande\Downloads\model.pickle",
+#                                   rendering=False)
+model = SarsaZeroAfterStates(TetrisEnv(type='fourer', render=False))
+metrics = evaluate_policy_afterstates(model, model.env, 500)
+print(metrics)
+print("Quantiles")
+print(metrics.quantile([0.25, 0.5, 0.75]))

@@ -6,7 +6,6 @@
 
 from tetris_environment.tetris_engine import *
 import pygame
-import os
 
 
 class RenderingTetrisGame(UnrenderedTetrisGame):

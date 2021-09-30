@@ -1,11 +1,12 @@
 import pickle
 import random
-from typing import Callable
+from typing import Callable, Tuple
 from Models.AfterstateModel import AfterstateModel
 from tetris_environment.tetris_env import TetrisEnv
 
 
 class OnPolicyMCAfterstates(AfterstateModel):
+
     def __init__(self, env: TetrisEnv, gamma: float = 1, value_function: dict = None, Q: dict = None, C: dict = None,
                  first_visit: bool = True) -> None:
         """
@@ -56,12 +57,12 @@ class OnPolicyMCAfterstates(AfterstateModel):
                 visited_afterstates = set()  # set of every s' visited in the episode
 
                 # Take first action
-                actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode, state)
                 done = False
 
                 # play entire episode
                 total_return = 0
                 while not done:
+                    _, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
                     reward = 0
                     for action in actions:
                         # take action a, observe R and s' until the piece has reached the bottom
@@ -88,40 +89,46 @@ class OnPolicyMCAfterstates(AfterstateModel):
                 for visited_state in visited_afterstates:
                     self.value_function.update({visited_state: self.Q[visited_state]})
 
-    def _epsilon_greedy_actions(self, learning_rate: Callable[[int], float], nb_episodes: int, state):
+    def _epsilon_greedy_actions(self, learning_rate: Callable[[int], float], nb_episodes: int) -> Tuple[tuple, list]:
         epsilon = learning_rate(nb_episodes)
         if random.random() <= epsilon:
             return self._pick_random_actions()
         else:
-            return self.predict(state)
+            return self.predict()
 
-    def predict(self, state):
+    def predict(self) -> Tuple[tuple, list]:
         possible_placements = self.env.all_possible_placements()
         # all possible placements for the current piece
         # return is of the form (afterstate, action)
         if len(possible_placements) > 0:
             best_placement = max(possible_placements, key=lambda pl: self.value_function.get(pl[0], 0))
-            a_star = best_placement[1]  # a_star denoting the best possible action according to the agent
         else:
-            a_star = (0, )  # no piece, so no action
-        return a_star
+            # no piece, so no action. State is also irrelevant, so None value to reduce computation
+            best_placement = None, [0, ]
+        return best_placement
 
-    def _pick_random_actions(self):
+    def _pick_random_actions(self) -> Tuple[tuple, list]:
         possible_placements = self.env.all_possible_placements()
         if len(possible_placements) > 0:
-            _, action = random.choice(possible_placements)
+            placement = random.choice(possible_placements)
         else:
-            action = (0, )  # no piece, so no action
-        return action
+            # no piece, so no action. State is also irrelevant, so None value to reduce computation
+            placement = None, [0, ]
+        return placement
 
     def save(self, filename: str) -> None:
         with open(filename, 'wb') as f:
-            pickle.dump((self.value_function, self.C, self.Q, self.first_visit), f)
+            pickle.dump((self.value_function, self.C, self.Q, self.first_visit, self.env.type), f)
             f.close()
 
     @staticmethod
-    def load(filename: str) -> StateValueModel:
+    def _load_file(filename: str):
         with open(filename, 'rb') as f:
-            value_func, C, Q, first_visit = pickle.load(f)
+            value_func, C, Q, first_visit, size = pickle.load(f)
             f.close()
-        return OnPolicyMCAfterstates(value_function=value_func, C=C, Q=Q, first_visit=first_visit)
+        return value_func, C, Q, first_visit, size
+
+    def load(self, filename: str, rendering: bool = False) -> AfterstateModel:
+        value_func, C, Q, first_visit, size = self._load_file(filename)
+        return OnPolicyMCAfterstates(env=TetrisEnv(type=size, render=rendering),
+                                     value_function=value_func, C=C, Q=Q, first_visit=first_visit)

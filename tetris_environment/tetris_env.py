@@ -1,11 +1,9 @@
 import copy
-import os
 import random
 from typing import Tuple
 
 import numpy as np
 import gym
-import pygame
 from gym import spaces
 from tetris_environment.tetris_engine import UnrenderedTetrisGame
 from tetris_environment.rendering_tetris_engine import RenderingTetrisGame
@@ -18,7 +16,7 @@ class TetrisEnv(gym.Env):
 
     def __init__(self, type: str, render: bool = False, low: int = -3, high: int = 3):
 
-        if type not in ("fourer", 'regular'):
+        if type not in ("fourer", 'regular', 'extended fourer'):
             raise RuntimeError("Invalid Tetris type")
 
         # open up a game state to communicate with emulator
