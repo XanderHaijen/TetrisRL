@@ -128,7 +128,8 @@ class OnPolicyMCAfterstates(AfterstateModel):
             f.close()
         return value_func, C, Q, first_visit, size
 
-    def load(self, filename: str, rendering: bool = False) -> AfterstateModel:
-        value_func, C, Q, first_visit, size = self._load_file(filename)
+    @staticmethod
+    def load(filename: str, rendering: bool = False) -> AfterstateModel:
+        value_func, C, Q, first_visit, size = OnPolicyMCAfterstates._load_file(filename)
         return OnPolicyMCAfterstates(env=TetrisEnv(type=size, render=rendering),
                                      value_function=value_func, C=C, Q=Q, first_visit=first_visit)

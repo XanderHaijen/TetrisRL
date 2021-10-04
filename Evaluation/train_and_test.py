@@ -37,19 +37,19 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
     :return: None
     All computed values, including the returns, are saved to file.
     """
-    print("starting train and test")
+    print(f"starting train and test for model {model.alpha}, {model.gamma}")
     episodes_trained = ep_trained
-    scores, nbs_pieces, episodes = [], [], []
+    scores, nbs_pieces, lines, episodes = [], [], [], []
     reached_200, reached_1000 = False, False
     t1, t2 = None, None
 
     t0 = time.perf_counter()
     for i in range(1, nb_training_sessions + 1):
-        print(f"starting training round {i} at {datetime.datetime.now()}")
+        # print(f"starting training round {i} at {datetime.datetime.now()}")
         model.train(learning_rate, training_size, episodes_trained)
         episodes_trained += training_size
 
-        print(f"starting evaluations round {i} at {datetime.datetime.now()}")
+        # print(f"starting evaluations round {i} at {datetime.datetime.now()}")
         if isinstance(model, AfterstateModel):
             metrics = Evaluate_policy.evaluate_policy_afterstates(model, model.env, eval_size)
         else:  # if isinstance(model, StateValueModel):
@@ -62,14 +62,15 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
             t2 = time.perf_counter()
             reached_1000 = True
         std_dev = metrics.std()
+        lines.append((mean["Lines_cleared"], std_dev["Lines_cleared"]))
         scores.append((mean["Score"], std_dev["Score"]))
         nbs_pieces.append((mean["Nb_pieces"], std_dev["Nb_pieces"]))
         episodes.append(episodes_trained)
 
         model.save(model_path)
-        print(f"ending round {i} at {datetime.datetime.now()}. Average score is {mean['Score']}.")
+        # print(f"ending round {i} at {datetime.datetime.now()}. Average score is {mean['Score']}.")
 
-    print(f"starting afterprocessing at {datetime.datetime.now()}")
+    # print(f"starting afterprocessing at {datetime.datetime.now()}")
 
     # save the measured times
     if t1 is not None:
@@ -98,7 +99,7 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
         pickle.dump((episodes, scores, nbs_pieces), f)
         f.close()
 
-    print("plotting figures")
+    # print("plotting figures")
     # plot the figure for the score
     j = 1
     path = os.path.join(metrics_dir, "score_plot.jpg")
