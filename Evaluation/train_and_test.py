@@ -37,7 +37,7 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
     :return: None
     All computed values, including the returns, are saved to file.
     """
-    print(f"starting train and test for model {type(model)}")
+    print(f"starting train and test for {model} at {datetime.datetime.now()}")
     episodes_trained = ep_trained
     scores, nbs_pieces, lines, episodes = [], [], [], []
     reached_200, reached_1000 = False, False
