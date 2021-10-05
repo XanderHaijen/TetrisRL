@@ -1,14 +1,12 @@
 import pickle
 import random
 from typing import Callable
-
-from gym import Env
-
 from Models.StateValueModel import StateValueModel
+from tetris_environment.tetris_env import TetrisEnv
 
 
 class OnPolicyMCForTetris(StateValueModel):
-    def __init__(self, env=Env, gamma: float = 1, value_function: dict = None, Q: dict = None, C: dict = None,
+    def __init__(self, env: TetrisEnv, gamma: float, value_function: dict = None, Q: dict = None, C: dict = None,
                  first_visit: bool = True) -> None:
         """
         Initializes a trainable Monte Carlo model.
@@ -98,7 +96,7 @@ class OnPolicyMCForTetris(StateValueModel):
                         self.Q[old_state].update({old_action: return_so_far})
                     visited_pairs.add((old_state, old_action))
 
-                # After episode: update value function and thus the policy
+                # After episode: update value function
                 visited_states = {state for state, action in visited_pairs}
                 for visited_state in visited_states:
                     if visited_state not in self.value_function.keys():
@@ -126,12 +124,17 @@ class OnPolicyMCForTetris(StateValueModel):
 
     def save(self, filename: str) -> None:
         with open(filename, 'wb') as f:
-            pickle.dump((self.value_function, self.C, self.Q, self.first_visit), f)
+            pickle.dump((self.value_function, self.gamma, self.C, self.Q, self.first_visit, self.env.type), f)
             f.close()
 
     @staticmethod
-    def load(filename: str) -> StateValueModel:
+    def load(filename: str, rendering: bool = False) -> StateValueModel:
         with open(filename, 'rb') as f:
-            value_func, C, Q, first_visit = pickle.load(f)
+            value_func, gamma, C, Q, first_visit, size = pickle.load(f)
             f.close()
-        return OnPolicyMCForTetris(value_function=value_func, C=C, Q=Q, first_visit=first_visit)
+        env = TetrisEnv(type=size, render=rendering)
+        return OnPolicyMCForTetris(env=env, gamma=gamma, value_function=value_func, C=C, Q=Q, first_visit=first_visit)
+
+    def __str__(self):
+        visit = "first-visit" if self.first_visit else "every-visit"
+        return f"On-policy {visit} {self.env.type} MC model with gamma={self.gamma}"

@@ -34,3 +34,7 @@ class StateValueModel:
     @abstractmethod
     def load(filename: str, rendering: bool):
         pass
+
+    @abstractmethod
+    def __str__(self):
+        pass

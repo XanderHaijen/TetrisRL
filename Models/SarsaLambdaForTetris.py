@@ -1,14 +1,17 @@
 import pickle
 from typing import Callable
 import random
-
-from gym import Env
-
 from Models.StateValueModel import StateValueModel
+from tetris_environment.tetris_env import TetrisEnv
 
 
 class SarsaLambdaForTetris(StateValueModel):
-    def __init__(self, env: Env, Lambda: float, alpha: float, gamma: float, traces: str, value_function=None, eligibility=None):
+    def __init__(self,
+                 env: TetrisEnv,
+                 Lambda: float, alpha: float, gamma: float,
+                 traces: str,
+                 value_function=None,
+                 eligibility=None):
         """
         Initializes a sarsa-control model with a Tetris environment
         :param Lambda: determines the amount of bootstrapping.
@@ -47,7 +50,7 @@ class SarsaLambdaForTetris(StateValueModel):
         (Sutton & Barto, section 7.5)
         :param learning_rate: = epsilon. A function of the number of episodes which goes to zero in the limit
         :param nb_episodes: the duration of one ´´training session´´
-        :param start_episode: zero in the beginnen, greater than zero when training an already partially trained agent
+        :param start_episode: zero in the beginning, greater than zero when training an already partially trained agent
         :return: None
         """
         # NOTE: eligibility traces will reset to 0 when their value is less than MIN_ELEG
@@ -88,7 +91,7 @@ class SarsaLambdaForTetris(StateValueModel):
                 else:
                     raise RuntimeError
 
-                if eleg > MIN_ELEG:
+                if eleg < MIN_ELEG:
                     if old_action in self.eligibility[old_state].keys():
                         self.eligibility[old_state].pop(old_action)
                     else:
@@ -143,12 +146,19 @@ class SarsaLambdaForTetris(StateValueModel):
 
     def save(self, filename: str):
         with open(filename, 'wb') as f:
-            pickle.dump((self.gamma, self.alpha, self.Lambda, self.value_function, self.eligibility, self.traces), f)
+            pickle.dump((self.gamma, self.alpha, self.Lambda,
+                         self.value_function, self.eligibility, self.traces,
+                         self.env.type), f)
             f.close()
 
     @staticmethod
-    def load(filename: str) -> StateValueModel:
+    def load(filename: str, rendering: bool = False) -> StateValueModel:
         with open(filename, 'rb') as f:
-            gamma, alpha, Lambda, value_function, eligibility, traces = pickle.load(f)
+            gamma, alpha, Lambda, value_function, eligibility, traces, size = pickle.load(f)
             f.close()
-        return SarsaLambdaForTetris(Lambda, alpha, gamma, traces, value_function, eligibility)
+        env = TetrisEnv(size, rendering)
+        return SarsaLambdaForTetris(env, Lambda, alpha, gamma, traces, value_function, eligibility)
+
+    def __str__(self):
+        return f"{self.env.type} Sarsa Lambda model (alpha={self.alpha}, gamma={self.gamma}, " \
+               f"lambda={self.Lambda}) with {self.traces} traces"

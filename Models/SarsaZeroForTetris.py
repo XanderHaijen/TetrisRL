@@ -112,3 +112,6 @@ class SarsaZeroForTetris(StateValueModel):
     def save(self, filename: str):
         with open(filename, 'wb') as f:
             pickle.dump((self.alpha, self.gamma, self.env.type, self.value_function), f)
+
+    def __str__(self):
+        return f"{self.env.type} Sarsa Zero model (alpha={self.alpha}, gamma={self.gamma})"

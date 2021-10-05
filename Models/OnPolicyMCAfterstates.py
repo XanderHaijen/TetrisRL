@@ -56,13 +56,11 @@ class OnPolicyMCAfterstates(AfterstateModel):
                 state = self.env.reset()
                 visited_afterstates = set()  # set of every s' visited in the episode
 
-                # Take first action
                 done = False
-
-                # play entire episode
+                # play entire episode. To enter while-loop, we use no-op
                 total_return = 0
+                actions = [0, ]
                 while not done:
-                    _, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
                     reward = 0
                     for action in actions:
                         # take action a, observe R and s' until the piece has reached the bottom
@@ -70,21 +68,22 @@ class OnPolicyMCAfterstates(AfterstateModel):
                         reward += extra_reward
                     total_return = self.gamma * total_return + reward
 
-                    if not self.first_visit or state not in visited_afterstates:
-                        return_so_far = self.Q.get(state, 0)  # Collect Q(s')
+                    afterstate, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
+                    if not self.first_visit or afterstate not in visited_afterstates:
+                        return_so_far = self.Q.get(afterstate, 0)  # Collect Q(s')
 
                         # Collect C(s') and update
-                        if state not in self.C.keys():
-                            self.C.update({state: 1})
+                        if afterstate not in self.C.keys():
+                            self.C.update({afterstate: 1})
                             cumulative = 1
                         else:
-                            self.C[state] += 1
-                            cumulative = self.C.get(state)
+                            self.C[afterstate] += 1
+                            cumulative = self.C[afterstate]
 
                         # Compute new value for Q(s') and store in Q
                         return_so_far = return_so_far + (total_return - return_so_far) / cumulative
-                        self.Q.update({state: return_so_far})
-                        visited_afterstates.add(state)
+                        self.Q.update({afterstate: return_so_far})
+                        visited_afterstates.add(afterstate)
 
                 for visited_state in visited_afterstates:
                     self.value_function.update({visited_state: self.Q[visited_state]})
@@ -133,3 +132,7 @@ class OnPolicyMCAfterstates(AfterstateModel):
         value_func, C, Q, first_visit, size = OnPolicyMCAfterstates._load_file(filename)
         return OnPolicyMCAfterstates(env=TetrisEnv(type=size, render=rendering),
                                      value_function=value_func, C=C, Q=Q, first_visit=first_visit)
+
+    def __str__(self):
+        visit = "first-visit" if self.first_visit else "every-visit"
+        return f"On-policy {visit} {self.env.type} afterstate MC model with gamma={self.gamma}"

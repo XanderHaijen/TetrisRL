@@ -64,7 +64,6 @@ class SarsaZeroAfterStates(AfterstateModel):
         leading to the most favourable afterstate.
         :param learning_rate:
         :param nb_episodes:
-        :param board:
         :return: a tuple of the form (afterstate, actions)
         """
         if random.random() < learning_rate(nb_episodes):
@@ -107,3 +106,6 @@ class SarsaZeroAfterStates(AfterstateModel):
     def save(self, filename: str):
         with open(filename, 'wb') as f:
             pickle.dump((self.alpha, self.gamma, self.value_function, self.env.type), f)
+
+    def __str__(self):
+        return f"{self.env.type} Sarsa Zero afterstate model (alpha={self.alpha}, gamma={self.gamma})"
