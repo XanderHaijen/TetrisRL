@@ -48,45 +48,43 @@ class OnPolicyMCAfterstates(AfterstateModel):
         trained episodes
         :return: None
         """
-        if self.first_visit:  # first-visit MC control
-            self.C = {}  # initialize self.C(s')
+        for episode in range(1, nb_episodes + 1):
+            # start the new episode
+            state = self.env.reset()
+            visited_afterstates = set()  # set of every s' visited in the episode
 
-            for episode in range(1, nb_episodes + 1):
-                # start the new episode
-                state = self.env.reset()
-                visited_afterstates = set()  # set of every s' visited in the episode
+            done = False
+            # play entire episode. To enter while-loop, we use no-op
+            total_return = 0
+            actions = [0, ]
+            while not done:
+                reward = 0
+                for action in actions:
+                    # take action a, observe R and s' until the piece has reached the bottom
+                    state, extra_reward, done, obs = self.env.step(action)
+                    reward += extra_reward
 
-                done = False
-                # play entire episode. To enter while-loop, we use no-op
-                total_return = 0
-                actions = [0, ]
-                while not done:
-                    reward = 0
-                    for action in actions:
-                        # take action a, observe R and s' until the piece has reached the bottom
-                        state, extra_reward, done, obs = self.env.step(action)
-                        reward += extra_reward
-                    total_return = self.gamma * total_return + reward
+                total_return = self.gamma * total_return + reward
 
-                    afterstate, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
-                    if not self.first_visit or afterstate not in visited_afterstates:
-                        return_so_far = self.Q.get(afterstate, 0)  # Collect Q(s')
+                afterstate, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
+                if not self.first_visit or afterstate not in visited_afterstates:
+                    return_so_far = self.Q.get(afterstate, 0)  # Collect Q(s')
 
-                        # Collect C(s') and update
-                        if afterstate not in self.C.keys():
-                            self.C.update({afterstate: 1})
-                            cumulative = 1
-                        else:
-                            self.C[afterstate] += 1
-                            cumulative = self.C[afterstate]
+                    # Collect C(s') and update
+                    if afterstate not in self.C.keys():
+                        self.C.update({afterstate: 1})
+                        cumulative = 1
+                    else:
+                        self.C[afterstate] += 1
+                        cumulative = self.C[afterstate]
 
-                        # Compute new value for Q(s') and store in Q
-                        return_so_far = return_so_far + (total_return - return_so_far) / cumulative
-                        self.Q.update({afterstate: return_so_far})
-                        visited_afterstates.add(afterstate)
+                    # Compute new value for Q(s') and store in Q
+                    return_so_far = return_so_far + (total_return - return_so_far) / cumulative
+                    self.Q.update({afterstate: return_so_far})
+                    visited_afterstates.add(afterstate)
 
-                for visited_state in visited_afterstates:
-                    self.value_function.update({visited_state: self.Q[visited_state]})
+            for visited_state in visited_afterstates:
+                self.value_function.update({visited_state: self.Q[visited_state]})
 
     def _epsilon_greedy_actions(self, learning_rate: Callable[[int], float], nb_episodes: int) -> Tuple[tuple, list]:
         epsilon = learning_rate(nb_episodes)
@@ -117,20 +115,20 @@ class OnPolicyMCAfterstates(AfterstateModel):
 
     def save(self, filename: str) -> None:
         with open(filename, 'wb') as f:
-            pickle.dump((self.value_function, self.C, self.Q, self.first_visit, self.env.type), f)
+            pickle.dump((self.value_function, self.C, self.Q, self.first_visit, self.env.type, self.gamma), f)
             f.close()
 
     @staticmethod
     def _load_file(filename: str):
         with open(filename, 'rb') as f:
-            value_func, C, Q, first_visit, size = pickle.load(f)
+            attrs = pickle.load(f)
             f.close()
-        return value_func, C, Q, first_visit, size
+        return attrs
 
     @staticmethod
     def load(filename: str, rendering: bool = False) -> AfterstateModel:
         value_func, C, Q, first_visit, size = OnPolicyMCAfterstates._load_file(filename)
-        return OnPolicyMCAfterstates(env=TetrisEnv(type=size, render=rendering),
+        return OnPolicyMCAfterstates(env=TetrisEnv(type=size, render=rendering), gamma=0.9,
                                      value_function=value_func, C=C, Q=Q, first_visit=first_visit)
 
     def __str__(self):

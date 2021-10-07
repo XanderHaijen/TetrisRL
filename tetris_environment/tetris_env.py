@@ -152,6 +152,13 @@ class TetrisEnv(gym.Env):
 
     @staticmethod
     def _get_actions(old_board, new_board):
+        """
+        Finds the actions required to position the falling piece on :param old_board in the same way as
+        the falling piece on :param new_board
+        :return: a list of all actions required (first rotations, then lateral movement). The last action added
+                is the move_down action
+        :raise AssertionError if the shapes of the falling pieces are different
+        """
         # Define actions
         move_left = 1
         move_right = 3

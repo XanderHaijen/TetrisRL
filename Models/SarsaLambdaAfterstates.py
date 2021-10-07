@@ -62,7 +62,7 @@ class SarsaLambdaAfterstates(AfterstateModel):
             while not done:
                 reward = 0
                 for action in actions:
-                    # take action a, observe R and s' until the piece has reached the bottom
+                    # take action a, observe R and s until the piece has reached the bottom
                     state, extra_reward, done, obs = self.env.step(action)
                     reward += extra_reward
 
@@ -87,12 +87,12 @@ class SarsaLambdaAfterstates(AfterstateModel):
                 else:
                     raise RuntimeError
 
-                if eleg < MIN_ELEG:
+                if abs(eleg) < MIN_ELEG:
                     self.eligibility.pop(state)
                 else:
                     self.eligibility.update({state: eleg})
 
-                # Update Q and E for all s in S, a in A(s) and simultaneously reduce size of E(s,a) to save on memory
+                # Update Q and E for all s in S, a in A(s) and simultaneously reduce size of E(s) to save on memory
 
                 # Q(s) <- Q(s) + alpha * delta * E(s)
                 # E(s) <- lambda * gamma * E(s)
@@ -100,14 +100,15 @@ class SarsaLambdaAfterstates(AfterstateModel):
                 for s in states:
                     self.value_function[s] += self.alpha * delta * self.eligibility.get(s, 0)
                     self.eligibility[s] *= (self.gamma * self.Lambda)
-                    if self.eligibility[s] < MIN_ELEG:
+                    if abs(self.eligibility[s]) < MIN_ELEG:
                         self.eligibility.pop(s)
 
     def _epsilon_greedy_actions(self, learning_rate: Callable[[int], float], nb_episodes: int) -> Tuple[tuple, list]:
         """
         :param nb_episodes: how far into learning is the agent
         :param learning_rate: a function of the number of episodes which goes towards zero at infinity
-        :return: the action according to the epsilon greedy policy
+        :return: the action according to the epsilon greedy policy, in the form of a tuple
+                (afterstate, actions)
         """
         epsilon = learning_rate(nb_episodes)
         if random.random() <= epsilon:
