@@ -10,12 +10,12 @@ from Evaluation.train_and_test import train_and_test
 from Models.OnPolicyMCAfterstates import OnPolicyMCAfterstates
 from tetris_environment.tetris_env import TetrisEnv
 
-# path_to_data_dir = "/data/leuven/343/vsc34339/RLData/MonteCarlo"
-path_to_data_dir = r"C:\Users\xande\Downloads"
+path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/MonteCarlo"
+# path_to_data_dir = r"C:\Users\xande\Downloads"
 
 # This file will train several Monte Carlo agents using different values for gamma
-gamma_values = [0.9]
-visit = [True]
+gamma_values = [0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.975]
+visit = [True, False]
 args = list()
 for gamma in gamma_values:
     for first_visit in visit:
@@ -28,7 +28,7 @@ def main(model: OnPolicyMCAfterstates) -> str:
     def epsilon(x: int) -> float:
         return 0.001
 
-    name_path = os.path.join(path_to_data_dir, f"{model.env.type}_MC_gamma_{model.gamma}")
+    name_path = os.path.join(path_to_data_dir, f"{model}")
     data_path = os.path.join(name_path, "Data")
     model_dir = os.path.join(name_path, "Model")
 
@@ -50,12 +50,12 @@ def main(model: OnPolicyMCAfterstates) -> str:
     return f"{model} done at {datetime.datetime.now()}."
 
 
-for arg in args:
-    result = main(arg)
-    print(result)
+# for arg in args:
+#     result = main(arg)
+#     print(result)
 
-# if __name__ == '__main__':
-#     with concurrent.futures.ProcessPoolExecutor() as executor:
-#         results = [executor.submit(main, func_arg) for func_arg in args]
-#         for fs in concurrent.futures.as_completed(results):
-#             print(fs.result())
+if __name__ == '__main__':
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = [executor.submit(main, func_arg) for func_arg in args]
+        for fs in concurrent.futures.as_completed(results):
+            print(fs.result())

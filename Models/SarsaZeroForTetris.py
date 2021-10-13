@@ -114,4 +114,4 @@ class SarsaZeroForTetris(StateValueModel):
             pickle.dump((self.alpha, self.gamma, self.env.type, self.value_function), f)
 
     def __str__(self):
-        return f"{self.env.type} Sarsa Zero model (alpha={self.alpha}, gamma={self.gamma})"
+        return f"{self.env.type} State-action Sarsa Zero model (alpha={self.alpha}, gamma={self.gamma})"

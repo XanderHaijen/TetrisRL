@@ -1,68 +1,61 @@
+import concurrent.futures
+import datetime
 import os
-import random
 import shutil
-import time
-from Evaluation.Evaluate_policy import evaluate_policy_afterstates
-from Evaluation.Render_policy import render_policy_afterstates
+import sys
+
+sys.path.append("/data/leuven/343/vsc34339/RLP")
+
+from Evaluation.train_and_test import train_and_test
+from Models.OnPolicyMCForTetris import OnPolicyMCForTetris
 from tetris_environment.tetris_env import TetrisEnv
-from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
-from Models.OnPolicyMCAfterstates import OnPolicyMCAfterstates
 
-models_dir = "scratch/leuven/343/vsc34339/RLData/fourer_sarsa"
-target_dir = "data/leuven/343/vsc34339/RLData"
-text_file = os.path.join(target_dir, "results.txt")
-f = open(text_file, "w+")
-for model_dir in os.listdir(models_dir):
-    model_path = os.path.join(models_dir, model_dir, "Model", "model.pickle")
-    model = SarsaZeroAfterStates.load(model_path)
-    metrics = evaluate_policy_afterstates(model, model.env, 2000)
-    results_dir = os.path.join(target_dir, "Results")
+path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/StateValueMonteCarlo"
+# path_to_data_dir = r"C:\Users\xande\Downloads"
 
-    f.write(f"\n \n \n For {model}: \n \n ")
-    f.write("Mean and quantiles: \n")
-    f.write(str(metrics.mean()))
-    f.write("\n")
-    f.write(str(metrics.quantile([0.25, 0.5, 0.75])))
-    f.write("\n")
-    f.write("Variance: \n")
-    f.write(str(metrics.var()))
-    f.write("\n Maximum and minimum \n ")
-    f.write(str(metrics.max()))
-    f.write(str(metrics.min()))
-    f.write("\n ------------------------------------------------------------"
-            " \n ------------------------------------------------------------ \n ")
-    metrics.to_csv(os.path.join(results_dir, f"{model}.csv"))
+# This file will train several Monte Carlo agents using different values for gamma
+gamma_values = [0.9, 0.8]
+visit = [True, False]
+args = list()
+for gamma in gamma_values:
+    for first_visit in visit:
+        args.append(OnPolicyMCForTetris(TetrisEnv(type='fourer', render=False),
+                                          gamma=gamma, first_visit=first_visit))
 
-f.write("The end")
 
-# model = OnPolicyMCAfterstates(gamma=0.9, first_visit=False, env=TetrisEnv(type='fourer', render=False))
-# model.train(lambda x: 0.01, 10)
-# model.save(r"C:\Users\xande\Downloads\mc.pickle")
-# print(model)
-# model = SarsaZeroAfterStates.load(r'C:\Users\xande\Downloads\2nd_model.pickle', False)
-# print("Trained:")
-# metrics = evaluate_policy_afterstates(model, model.env, 500)
-# print(metrics)
-# print("Quantiles")
-# print(metrics.quantile([0.25, 0.5, 0.75]))
-# print("Mean")
-# print(metrics.mean())
-#
-# model.env = TetrisEnv('fourer', True)
-# render_policy_afterstates(model, model.env, 10)
+def main(model: OnPolicyMCForTetris) -> str:
 
-# print("Trained")
-# model = OnPolicyMCAfterstates.load(filename=r"C:\Users\xande\Downloads\2nd_model.pickle",
-#                                   rendering=False)
-#
-# metrics = evaluate_policy_afterstates(model, model.env, 500)
-# print(metrics)
-# print("Max")
-# print(metrics.max)
-# print("Quantiles")
-# print(metrics.quantile([0.25, 0.5, 0.75]))
-# print("Mean")
-# print(metrics.mean())
-#
-# model.env = TetrisEnv(type=model.env.type, render=True)
-# render_policy_afterstates(model, model.env, 10)
+    def epsilon(x: int) -> float:
+        return 0.001
+
+    name_path = os.path.join(path_to_data_dir, f"{model}")
+    data_path = os.path.join(name_path, "Data")
+    model_dir = os.path.join(name_path, "Model")
+
+    if os.path.isdir(name_path):
+        shutil.rmtree(name_path)
+
+    os.mkdir(name_path)
+    os.mkdir(data_path)
+    os.mkdir(model_dir)
+
+    model_path = os.path.join(model_dir, "model.pickle")
+
+    train_and_test(model,
+                   epsilon,
+                   model_path,
+                   data_path,
+                   10, 5, 10)
+
+    return f"{model} done at {datetime.datetime.now()}."
+
+
+# for arg in args:
+#     result = main(arg)
+#     print(result)
+
+if __name__ == '__main__':
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = [executor.submit(main, func_arg) for func_arg in args]
+        for fs in concurrent.futures.as_completed(results):
+            print(fs.result())
