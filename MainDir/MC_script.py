@@ -10,7 +10,7 @@ from Evaluation.train_and_test import train_and_test
 from Models.OnPolicyMCAfterstates import OnPolicyMCAfterstates
 from tetris_environment.tetris_env import TetrisEnv
 
-path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/MonteCarlo"
+path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/MonteCarloExFourer"
 # path_to_data_dir = r"C:\Users\xande\Downloads"
 
 # This file will train several Monte Carlo agents using different values for gamma
@@ -19,7 +19,7 @@ visit = [True, False]
 args = list()
 for gamma in gamma_values:
     for first_visit in visit:
-        args.append(OnPolicyMCAfterstates(TetrisEnv(type='fourer', render=False),
+        args.append(OnPolicyMCAfterstates(TetrisEnv(type='extended fourer', render=False),
                                           gamma=gamma, first_visit=first_visit))
 
 
@@ -45,7 +45,7 @@ def main(model: OnPolicyMCAfterstates) -> str:
                    epsilon,
                    model_path,
                    data_path,
-                   10, 5, 10)
+                   10000, 20, 1000)
 
     return f"{model} done at {datetime.datetime.now()}."
 
