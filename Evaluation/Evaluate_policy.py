@@ -61,6 +61,7 @@ def evaluate_policy_state_action(algorithm: StateValueModel, env: Env, nb_episod
         j = 0
         data = {}
         total_cleared = 0
+        total_score = 0
         while not done:
             j += 1
             action = algorithm.predict(state)
@@ -68,9 +69,9 @@ def evaluate_policy_state_action(algorithm: StateValueModel, env: Env, nb_episod
             if data["new_piece"]:
                 nb_pieces += 1
             total_cleared += data["lines_cleared"]
+            total_score += data["score"]
 
-        score = data.get("score", 0)
-        metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": total_cleared, "Score": score})
+        metrics.append({"Nb_pieces": nb_pieces, "Lines_cleared": total_cleared, "Score": total_score})
 
     metrics_df = pd.DataFrame.from_records(metrics)
     return metrics_df

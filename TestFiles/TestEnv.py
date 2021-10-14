@@ -1,61 +1,11 @@
-import concurrent.futures
-import datetime
-import os
-import shutil
-import sys
-
-sys.path.append("/data/leuven/343/vsc34339/RLP")
-
-from Evaluation.train_and_test import train_and_test
 from Models.OnPolicyMCForTetris import OnPolicyMCForTetris
+from Evaluation.Evaluate_policy import evaluate_policy_state_action
+from Evaluation.Render_policy import render_policy_state_action
 from tetris_environment.tetris_env import TetrisEnv
 
-path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/StateValueMonteCarlo"
-# path_to_data_dir = r"C:\Users\xande\Downloads"
-
-# This file will train several Monte Carlo agents using different values for gamma
-gamma_values = [0.9, 0.8]
-visit = [True, False]
-args = list()
-for gamma in gamma_values:
-    for first_visit in visit:
-        args.append(OnPolicyMCForTetris(TetrisEnv(type='fourer', render=False),
-                                          gamma=gamma, first_visit=first_visit))
-
-
-def main(model: OnPolicyMCForTetris) -> str:
-
-    def epsilon(x: int) -> float:
-        return 0.001
-
-    name_path = os.path.join(path_to_data_dir, f"{model}")
-    data_path = os.path.join(name_path, "Data")
-    model_dir = os.path.join(name_path, "Model")
-
-    if os.path.isdir(name_path):
-        shutil.rmtree(name_path)
-
-    os.mkdir(name_path)
-    os.mkdir(data_path)
-    os.mkdir(model_dir)
-
-    model_path = os.path.join(model_dir, "model.pickle")
-
-    train_and_test(model,
-                   epsilon,
-                   model_path,
-                   data_path,
-                   10, 5, 10)
-
-    return f"{model} done at {datetime.datetime.now()}."
-
-
-# for arg in args:
-#     result = main(arg)
-#     print(result)
-
-if __name__ == '__main__':
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = [executor.submit(main, func_arg) for func_arg in args]
-        for fs in concurrent.futures.as_completed(results):
-            print(fs.result())
+model = OnPolicyMCForTetris.load(r"C:\Users\xande\Downloads\model.pickle")
+metrics = evaluate_policy_state_action(model, model.env, 500)
+print(metrics.mean)
+print(metrics.quantile([0.25, 0.5, 0.75]))
+model.env = TetrisEnv(type="fourer", render=True)
+render_policy_state_action(model, model.env, 10)

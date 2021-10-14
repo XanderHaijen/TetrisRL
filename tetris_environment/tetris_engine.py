@@ -370,7 +370,7 @@ class UnrenderedTetrisGame:
 
                 self.reinit()
                 reward = -1000  # penalty for game over
-                data = {"score": 0, "lines_cleared": self.total_lines, "new_piece": new_piece}
+                data = {"score": 0, "lines_cleared": 0, "new_piece": new_piece}
                 return None, reward, terminal, data  # can't fit a new piece on the self.board, so game over
 
         # moving the piece sideways
