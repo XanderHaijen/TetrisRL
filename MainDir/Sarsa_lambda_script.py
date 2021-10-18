@@ -19,7 +19,7 @@ path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaLambda"
 # This file will train and test several combinations of alpha, gamma and lambda
 alpha_values = [0.05]
 gamma_values = [0.9]
-lambda_values = [0]
+lambda_values = [0.4]
 
 # With a given type of traces
 traces_values = ["accumulating", "dutch", "replacing"]

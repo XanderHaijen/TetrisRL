@@ -29,7 +29,7 @@ class SarsaLambdaAfterstates(AfterstateModel):
             value_function = {}
 
         if Lambda == 0:
-            raise Warning("If lambda = 0, better use SarsaZeroAfterstates")
+            print("WARNING: If lambda = 0, better use SarsaZeroAfterstates")
 
         self.value_function = value_function
 
@@ -66,6 +66,10 @@ class SarsaLambdaAfterstates(AfterstateModel):
                     state, extra_reward, done, obs = self.env.step(action)
                     reward += extra_reward
 
+                if state not in self.value_function.keys():
+                    self.value_function.update({state: 0})
+
+                # Determine next action and next state
                 afterstate, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
 
                 # collect V(s') and V(s)

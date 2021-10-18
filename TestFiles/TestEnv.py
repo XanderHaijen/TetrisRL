@@ -1,11 +1,13 @@
 from Models.OnPolicyMCForTetris import OnPolicyMCForTetris
-from Evaluation.Evaluate_policy import evaluate_policy_state_action
-from Evaluation.Render_policy import render_policy_state_action
+from Evaluation.Evaluate_policy import *
+from Evaluation.Render_policy import *
 from tetris_environment.tetris_env import TetrisEnv
+from Models.SarsaLambdaAfterstates import SarsaLambdaAfterstates
+from Evaluation.train_and_test import train_and_test
 
-model = OnPolicyMCForTetris.load(r"C:\Users\xande\Downloads\model.pickle")
-metrics = evaluate_policy_state_action(model, model.env, 500)
-print(metrics.mean)
-print(metrics.quantile([0.25, 0.5, 0.75]))
-model.env = TetrisEnv(type="fourer", render=True)
-render_policy_state_action(model, model.env, 10)
+env = TetrisEnv(type='fourer', render=True)
+model = SarsaLambdaAfterstates(env, 0.8, 0.2, 0.8, "accumulating")
+
+train_and_test(model,
+               lambda x: 0.001,
+               )
