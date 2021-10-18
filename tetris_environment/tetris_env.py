@@ -1,6 +1,6 @@
 import copy
 import random
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 import gym
@@ -188,3 +188,13 @@ class TetrisEnv(gym.Env):
         actions.append(move_down)
 
         return actions
+
+    def get_falling_piece(self) -> Union[tuple, None]:
+        """
+        :return: a tuple of the form (piece.shape, piece.x, piece.y, piece.rotation)
+        """
+        return self.game_state.get_falling_piece()
+
+    @property
+    def no_move(self):
+        return 0

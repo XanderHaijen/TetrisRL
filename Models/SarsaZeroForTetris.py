@@ -43,27 +43,34 @@ class SarsaZeroForTetris(StateValueModel):
 
         for episode in range(nb_episodes):  # for each episode
             state = self.env.reset()
+            piece = self.env.get_falling_piece()
 
-            if state not in self.value_function.keys():
-                self.value_function.update({state: {}})
+            ext_state = (state, piece)
+            if ext_state not in self.value_function.keys() and piece is not None:
+                self.value_function.update({ext_state: {}})
 
-            action = self._epsilon_greedy_action(learning_rate, episode + start_episode, state)
+            action = self._epsilon_greedy_action(learning_rate, episode + start_episode, ext_state)
             done = False
             while not done:
-                old_state = state  # save old state s
+                old_ext_state = ext_state  # save old state s
                 old_action = action  # save old action a
                 state, reward, done, obs = self.env.step(action)  # new state and action s', a'
-                action = self._epsilon_greedy_action(learning_rate, episode + start_episode, state)
+                piece = self.env.get_falling_piece()
+                if piece is not None:
+                    ext_state = (state, piece)
+                    action = self._epsilon_greedy_action(learning_rate, episode + start_episode, ext_state)
 
-                # update value function at Q(s,a)
-                value_at_next_state = self.value_function.get(state, {}).get(action, 0)
-                old_value = self.value_function.get(old_state, {}).get(old_action, 0)
-                new_value = old_value + self.alpha * (reward + self.gamma * value_at_next_state - old_value)
-                if old_state not in self.value_function.keys():
-                    self.value_function.update({old_state: {}})
-                self.value_function[old_state].update({old_action: new_value})
+                    # update value function at Q(s,a)
+                    value_at_next_state = self.value_function.get(ext_state, {}).get(action, 0)
+                    old_value = self.value_function.get(old_ext_state, {}).get(old_action, 0)
+                    new_value = old_value + self.alpha * (reward + self.gamma * value_at_next_state - old_value)
+                    if old_ext_state not in self.value_function.keys():
+                        self.value_function.update({old_ext_state: {}})
+                    self.value_function[old_ext_state].update({old_action: new_value})
+                else:  # if piece is None, there is no falling piece. Make no move
+                    action = self.env.no_move
 
-    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes, state):
+    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes, ext_state):
         """
         :param state: the state for which to choose the epsilon greedy action
         :param nb_episodes: how far into learning is the agent
@@ -75,15 +82,15 @@ class SarsaZeroForTetris(StateValueModel):
             action = self.env.action_space.sample()
             return action
         else:
-            action = self.predict(state)
+            action = self.predict(ext_state)
             return action
 
     def _nb_actions(self) -> int:
         return len(self.env.game_state.get_action_set())
 
-    def predict(self, state):
+    def predict(self, ext_state):
 
-        values_for_state = self.value_function.get(state, {})
+        values_for_state = self.value_function.get(ext_state, {})
         a_star = self._argmax_dict(values_for_state)  # A_star is the optimal action in state A
         return a_star
 

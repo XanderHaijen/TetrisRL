@@ -3,11 +3,12 @@
 # Released under a "Simplified BSD" license
 
 # Modified to work for this project
-
+import copy
 import random
 import time
 from abc import abstractmethod
 from math import sqrt
+from typing import Union
 
 FPS = 25
 BOXSIZE = 20
@@ -589,6 +590,17 @@ class UnrenderedTetrisGame:
     @staticmethod
     def is_on_board(x, y):
         return 0 <= x < BOARDWIDTH and y < BOARDHEIGHT
+
+    def get_falling_piece(self) -> Union[tuple, None]:
+        """
+        :return: a tuple of the form (piece.shape, piece.x, piece.y, piece.rotation)
+        """
+        if self.fallingPiece is not None:
+            piece = (self.fallingPiece["shape"], self.fallingPiece["x"],
+                     self.fallingPiece["y"], self.fallingPiece["rotation"])
+        else:
+            piece = None
+        return piece
 
     def is_valid_position(self, adjX=0, adjY=0, piece=None):
         """

@@ -1,20 +1,31 @@
 import os
 from typing import Type
 
-
-
 from Evaluation.Evaluate_policy import evaluate_policy_afterstates
 from Models.AfterstateModel import AfterstateModel
-from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
 
 
-def extended_test(model_type: Type[AfterstateModel], models_dir):
+def extended_test(model_type: Type[AfterstateModel], models_dir: str,
+                  target_dir: str = None, nb_episodes: int = 2000) -> None:
+    """
+    Runs an extensive test of all models of the same type in a given folder. For every model, a csv containing
+    score, pieces placed and lines cleared is created. A text file containing an overview of all test is also created
+    :param model_type: the type of model, must be subclass of AfterstateModel
+    :param models_dir: the directory containing all the models to test
+    :raises TypeError if not all models are of the type provided in model_type
+    :param target_dir: the directory which is to contain all results
+    :param nb_episodes: the amount of episodes each model will train
+    :return: None
+    """
+    if target_dir is None:
+        target_dir = models_dir
+
     text_file = os.path.join(target_dir, "results.txt")
     f = open(text_file, "w+")
     for model_dir in os.listdir(models_dir):
         model_path = os.path.join(models_dir, model_dir, "Model", "model.pickle")
         model = model_type.load(model_path)
-        metrics = evaluate_policy_afterstates(model, model.env, 2000)
+        metrics = evaluate_policy_afterstates(model, model.env, nb_episodes)
         results_dir = os.path.join(target_dir, "Results")
 
         if not os.path.isdir(results_dir):
@@ -25,20 +36,15 @@ def extended_test(model_type: Type[AfterstateModel], models_dir):
         f.write(str(metrics.mean()))
         f.write("\n")
         f.write(str(metrics.quantile([0.25, 0.5, 0.75])))
-        f.write("\n")
-        f.write("Variance: \n")
+        f.write("\nVariance: \n")
         f.write(str(metrics.var()))
         f.write("\n Maximum and minimum \n ")
         f.write(str(metrics.max()))
+        print("\n")
         f.write(str(metrics.min()))
         f.write("\n ------------------------------------------------------------"
-                " \n ------------------------------------------------------------ \n ")
+                "\n ------------------------------------------------------------\n ")
         metrics.to_csv(os.path.join(results_dir, f"{model}.csv"))
 
     f.write("The end")
-
-
-models_dir = "scratch/leuven/343/vsc34339/RLData/fourer_sarsa"
-target_dir = "data/leuven/343/vsc34339/RLData"
-model_type = SarsaZeroAfterStates
-extended_test(model_type, models_dir)
+    f.close()
