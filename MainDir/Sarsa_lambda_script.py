@@ -12,14 +12,14 @@ from tetris_environment.tetris_env import TetrisEnv
 
 args = []
 
-path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaLambda"
-# path_to_data_dir = r'C:\Users\xande\Downloads'
+path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaLambda/acc_traces"
+# path_to_data_dir = r"D:\Bibliotheken\Downloads"
 
 
 # This file will train and test several combinations of alpha, gamma and lambda
-alpha_values = [0.05]
-gamma_values = [0.9]
-lambda_values = [0.4]
+alpha_values = [0.1]
+gamma_values = [0.7]
+lambda_values = [1, 0.95, 0.9, 0.8]
 
 # With a given type of traces
 traces_values = ["accumulating", "dutch", "replacing"]
@@ -69,18 +69,17 @@ def main(func_arg: SarsaLambdaAfterstates) -> str:
                    epsilon,
                    model_path,
                    data_path,
-                   10000, 20, 1000)
+                   1, 2, 1)
 
     return f"{model.env.type}_alpha_{model.alpha}_gamma_{model.gamma}_lambda_{model.Lambda}_with_{model.traces}_traces" \
            f" done at {datetime.datetime.now()}."
 
 
-for arg in args:
-    result = main(arg)
-    print(result)
+# for arg in args:
+#     result = main(arg)
+#     print(result)
 
-# if __name__ == '__main__':
-#     with concurrent.futures.ProcessPoolExecutor() as executor:
-#         results = [executor.submit(main, func_arg) for func_arg in args]
-#         for fs in concurrent.futures.as_completed(results):
-#             print(fs.result())
+if __name__ == '__main__':
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        for result in executor.map(main, args):
+            print(result)

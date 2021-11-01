@@ -11,7 +11,7 @@ class SarsaZeroForTetris(StateValueModel):
     A Sarsa model working with a state-action value function Q(s,a)
     """
 
-    def __init__(self, env: TetrisEnv, alpha=1, gamma=1, value_function=None):
+    def __init__(self, env: TetrisEnv, alpha=1, gamma=1, value_function: dict = None):
         """
 
         :param alpha: step-size-parameter in the update rule
@@ -46,11 +46,9 @@ class SarsaZeroForTetris(StateValueModel):
             piece = self.env.get_falling_piece()
 
             ext_state = (state, piece)
-            if ext_state not in self.value_function.keys() and piece is not None:
-                self.value_function.update({ext_state: {}})
-
             action = self._epsilon_greedy_action(learning_rate, episode + start_episode, ext_state)
             done = False
+
             while not done:
                 old_ext_state = ext_state  # save old state s
                 old_action = action  # save old action a
@@ -64,15 +62,17 @@ class SarsaZeroForTetris(StateValueModel):
                     value_at_next_state = self.value_function.get(ext_state, {}).get(action, 0)
                     old_value = self.value_function.get(old_ext_state, {}).get(old_action, 0)
                     new_value = old_value + self.alpha * (reward + self.gamma * value_at_next_state - old_value)
-                    if old_ext_state not in self.value_function.keys():
-                        self.value_function.update({old_ext_state: {}})
-                    self.value_function[old_ext_state].update({old_action: new_value})
+                    if new_value != 0:
+                        if old_ext_state not in self.value_function.keys():
+                            self.value_function.update({old_ext_state: {}})
+                        self.value_function[old_ext_state].update({old_action: new_value})
+                        print(self.value_function)
                 else:  # if piece is None, there is no falling piece. Make no move
                     action = self.env.no_move
 
     def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes, ext_state):
         """
-        :param state: the state for which to choose the epsilon greedy action
+        :param ext_state: the state for which to choose the epsilon greedy action
         :param nb_episodes: how far into learning is the agent
         :param learning_rate: a function of the number of episodes which goes towards zero at infinity
         :return: the action according to the epsilon greedy policy
