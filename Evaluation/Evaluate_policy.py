@@ -77,7 +77,7 @@ def evaluate_policy_state_action(algorithm: StateValueModel, env: Env, nb_episod
     return metrics_df
 
 
-def plot_with_errors(x_sequence, y_sequence, name, image_path, fig_nb) -> None:
+def plot_with_errors(x_sequence, y_sequence, errors, name, image_path, fig_nb) -> None:
     """
     :param name: name to put on the y-axis and in the label of the legend
     :param fig_nb: ensures plots are not overwritten
@@ -87,8 +87,8 @@ def plot_with_errors(x_sequence, y_sequence, name, image_path, fig_nb) -> None:
     :return: None
     """
     plt.figure(fig_nb)
-    plt.errorbar(x_sequence, [mean for mean, _ in y_sequence], [var for _, var in y_sequence],
-                 linestyle='-', marker='^', label=name)
+    plt.errorbar(x_sequence, y_sequence, yerr=errors,
+                 linestyle='-', marker='x', label=name)
     plt.legend()
     plt.xlabel("Number of episodes trained")
     plt.ylabel(name)

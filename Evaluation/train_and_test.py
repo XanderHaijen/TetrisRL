@@ -6,6 +6,7 @@ from Models.StateValueModel import StateValueModel
 import os
 import datetime
 import time
+import pandas as pd
 
 
 def train_and_test(model: Union[StateValueModel, AfterstateModel],
@@ -38,8 +39,10 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
     All computed values, including the returns, are saved to file.
     """
     print(f"starting train and test for {model} at {datetime.datetime.now()}")
+    all_metrics = [["Episodes trained", "Lines mean", "Lines lower quantile", "Lines upper quantile", "Nb pieces mean",
+                    "Nb pieces lower quantile", "Nb pieces upper quantile", "Score mean",
+                    "Score lower quantile", "Score upper quantile"]]
     episodes_trained = ep_trained
-    scores, nbs_pieces, lines, episodes = [], [], [], []
     reached_200, reached_1000 = False, False
     t1, t2 = None, None
 
@@ -55,57 +58,61 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
         else:  # if isinstance(model, StateValueModel):
             metrics = Evaluate_policy.evaluate_policy_state_action(model, model.env, eval_size)
         mean = metrics.mean()
-        if not reached_200 and mean["Score"] > 200:
+        if not reached_200 and mean["Lines_cleared"] > 20:
             t1 = time.perf_counter()
             reached_200 = True
-        if not reached_1000 and mean["Score"] > 1000:
+        if not reached_1000 and mean["Lines_cleared"] > 100:
             t2 = time.perf_counter()
             reached_1000 = True
-        std_dev = metrics.std()
-        lines.append((mean["Lines_cleared"], std_dev["Lines_cleared"]))
-        scores.append((mean["Score"], std_dev["Score"]))
-        nbs_pieces.append((mean["Nb_pieces"], std_dev["Nb_pieces"]))
-        episodes.append(episodes_trained)
-
+        quantiles = metrics.quantile([0.25, 0.75])
+        all_metrics.append([episodes_trained,
+                            mean["Lines_cleared"], quantiles["Lines_cleared"][0.25], quantiles["Lines_cleared"][0.75],
+                            mean["Nb_pieces"], quantiles["Nb_pieces"][0.25], quantiles["Nb_pieces"][0.75],
+                            mean["Score"], quantiles["Score"][0.25], quantiles["Score"][0.75]])
         model.save(model_path)
         # print(f"ending round {i} at {datetime.datetime.now()}. Average score is {mean['Score']}.")
-
     # print(f"starting afterprocessing at {datetime.datetime.now()}")
+
+    dataframe = pd.DataFrame(all_metrics[1:], columns=all_metrics[0])
 
     # save the measured times
     if t1 is not None:
-        time_to_reach_200 = t1 - t0
+        time_to_clear_20 = t1 - t0
     else:
-        time_to_reach_200 = "Inf"
+        time_to_clear_20 = "Inf"
 
     if t2 is not None:
-        time_to_reach_1000 = t2 - t0
+        time_to_clear_100 = t2 - t0
     else:
-        time_to_reach_1000 = "Inf"
+        time_to_clear_100 = "Inf"
 
-    times = [time_to_reach_200, time_to_reach_1000]
-
-    path = os.path.join(metrics_dir, "times.pickle")
-    with open(path, 'wb') as f:
-        pickle.dump(times, f)
+    path = os.path.join(metrics_dir, "times.txt")
+    with open(path, 'w+') as f:
+        f.write(f"Time to reach 200: {time_to_clear_20} \n")
+        f.write(f"Time to reach 1,000: {time_to_clear_100} \n")
         f.close()
 
     # save the model
     model.save(model_path)
 
     # save the evaluation data
-    path = os.path.join(metrics_dir, "scores_and_pieces.pickle")
-    with open(path, 'wb') as f:
-        pickle.dump((episodes, scores, nbs_pieces), f)
-        f.close()
+    path = os.path.join(metrics_dir, "scores_and_pieces.csv")
+    dataframe.to_csv(path)
 
     # print("plotting figures")
     # plot the figure for the score
     j = 1
-    path = os.path.join(metrics_dir, "score_plot.jpg")
-    Evaluate_policy.plot_with_errors(episodes, scores, "average score", path, j)
+    path = os.path.join(metrics_dir, "lines_plot.jpg")
+    top_err = list(dataframe["Lines upper quantile"] - dataframe["Lines mean"])
+    low_err = list(dataframe["Lines mean"] - dataframe["Lines lower quantile"])
+    print(top_err)
+    Evaluate_policy.plot_with_errors(dataframe["Episodes trained"], dataframe["Lines mean"],
+                                     (low_err, top_err), "average lines cleared", path, j)
 
     # plot the figure for the nbs_pieces
     j += 1
     path = os.path.join(metrics_dir, "pieces_plot.jpg")
-    Evaluate_policy.plot_with_errors(episodes, nbs_pieces, "average number of pieces", path, j)
+    top_err = dataframe["Nb pieces upper quantile"] - dataframe["Nb pieces mean"]
+    low_err = dataframe["Nb pieces mean"] - dataframe["Nb pieces lower quantile"]
+    Evaluate_policy.plot_with_errors(dataframe["Episodes trained"], dataframe["Nb pieces mean"], (top_err, low_err),
+                                     "average number of pieces", path, j)
