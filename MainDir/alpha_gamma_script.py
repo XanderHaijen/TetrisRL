@@ -7,26 +7,25 @@ import sys
 sys.path.append("/data/leuven/343/vsc34339/RLP")
 
 from Evaluation.train_and_test import train_and_test
-from Models.SarsaZeroAfterstates import SarsaZeroAfterStates
+from Models.SarsaZeroForTetris import SarsaZeroForTetris
 from tetris_environment.tetris_env import TetrisEnv
 
 args = []
 
-path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaExFourer"
+path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SV_fourer_Sarsa"
 # path_to_data_dir = r'C:\Users\xande\Downloads'
 
 
 # This file will train and test several combinations of alpha and gamma using a Sarsa(0) model
-alpha_values = [0.01, 0.02, 0.05, 0.1]
-gamma_values = [0.7, 0.8, 0.85, 0.9]
+alpha_values = [0.01]
+gamma_values = [0.7]
 for alpha in alpha_values:
     for gamma in gamma_values:
-        if alpha != 0.01 and alpha != 0.02 and not (alpha == 0.05 and gamma in {0.85, 0.7, 0.8}):
-            args.append(SarsaZeroAfterStates(TetrisEnv(type='extended fourer', render=False), alpha, gamma))
+        args.append(SarsaZeroForTetris(TetrisEnv(type='extended fourer', render=False), alpha, gamma))
 
 
 # trained simultaneously with concurrent.futures
-def main(model: SarsaZeroAfterStates) -> str:
+def main(model: SarsaZeroForTetris) -> str:
     """
 
     :param model: the model to be trained
@@ -56,15 +55,15 @@ def main(model: SarsaZeroAfterStates) -> str:
                    data_path,
                    10000, 20, 1000)
 
-    return f"Model {model.env.type} gamma:{model.gamma} alpha:{model.alpha} done at {datetime.datetime.now()}"
+    return f"{model} done at {datetime.datetime.now()}"
 
 
-# for arg in args:
-#     result = main(arg)
-#     print(result)
+for arg in args:
+    result = main(arg)
+    print(result)
 
-if __name__ == '__main__':
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = [executor.submit(main, func_arg) for func_arg in args]
-        for fs in concurrent.futures.as_completed(results):
-            print(fs.result())
+# if __name__ == '__main__':
+#     with concurrent.futures.ProcessPoolExecutor() as executor:
+#         results = [executor.submit(main, func_arg) for func_arg in args]
+#         for fs in concurrent.futures.as_completed(results):
+#             print(fs.result())

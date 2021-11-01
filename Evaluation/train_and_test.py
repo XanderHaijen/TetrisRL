@@ -22,11 +22,11 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
     By default, 20 training rounds of 1000 games each, with 20 evaluation rounds of 500 games in between
     It saves all evaluation and training data at the provided paths
     Evaluation data saved:
-        • the number of pieces placed using the policy after each 1000-game interval (mean and standard deviation)
-        • the score obtained using the policy after each 1000-game interval (mean and standard deviation)
+        • the number of pieces placed using the policy after each 1000-game interval (mean and quantiles)
+        • the score obtained using the policy after each 1000-game interval (mean and quantiles)
     Training data saved:
-        • the time it took the algorithm to achieve an average score of 200 and 1000 (in seconds).
-            If this score was not reached after the whole of training, the time is of type str, containing "Inf"
+        • the time it took the algorithm to achieve an average lines cleared of 20 and 50 (in seconds).
+            If this number was not reached after the whole of training, the time is of type str, containing "Inf"
     :param ep_trained: for training an already (partially) trained agent
     :param model: the model to train and test
     :param learning_rate: the function for epsilon
@@ -36,7 +36,8 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
     :param nb_training_sessions: the amount of sessions of length :param training_size
     :param eval_size: the amount of episodes the policy is evaluated each time
     :return: None
-    All computed values, including the returns, are saved to file.
+    All computed values, including the returns, are saved to file: csv files for the training data, txt files
+    for the times, and pickle files for the dictionary.
     """
     print(f"starting train and test for {model} at {datetime.datetime.now()}")
     all_metrics = [["Episodes trained", "Lines mean", "Lines lower quantile", "Lines upper quantile", "Nb pieces mean",
@@ -58,10 +59,10 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
         else:  # if isinstance(model, StateValueModel):
             metrics = Evaluate_policy.evaluate_policy_state_action(model, model.env, eval_size)
         mean = metrics.mean()
-        if not reached_200 and mean["Lines_cleared"] > 20:
+        if not reached_200 and mean["Lines_cleared"] >= 20:
             t1 = time.perf_counter()
             reached_200 = True
-        if not reached_1000 and mean["Lines_cleared"] > 100:
+        if not reached_1000 and mean["Lines_cleared"] >= 50:
             t2 = time.perf_counter()
             reached_1000 = True
         quantiles = metrics.quantile([0.25, 0.75])
@@ -82,14 +83,14 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
         time_to_clear_20 = "Inf"
 
     if t2 is not None:
-        time_to_clear_100 = t2 - t0
+        time_to_clear_50 = t2 - t0
     else:
-        time_to_clear_100 = "Inf"
+        time_to_clear_50 = "Inf"
 
     path = os.path.join(metrics_dir, "times.txt")
     with open(path, 'w+') as f:
-        f.write(f"Time to reach 200: {time_to_clear_20} \n")
-        f.write(f"Time to reach 1,000: {time_to_clear_100} \n")
+        f.write(f"Time to reach 20 lines: {time_to_clear_20} \n")
+        f.write(f"Time to reach 50 lines: {time_to_clear_50} \n")
         f.close()
 
     # save the model
