@@ -9,7 +9,7 @@ import csv
 import numpy as np
 import pandas as pd
 
-source_dir = r"C:\Users\xande\OneDrive\Documenten\KULeuven\ReinforcementLearning\RLData\Sarsa0_exfourer_AS_results\Results"
+source_dir = r"C:\Users\xande\OneDrive\Documenten\KULeuven\ReinforcementLearning\RLData\Sarsa0_fourer_SV_results\Results"
 
 
 def is_csv(filepath) -> bool:
@@ -63,7 +63,7 @@ def quantile_plot(stats: dict, xlabel, ylabel):
         i += 1
     plt.xticks(range(len(alpha_values)), alpha_values)
     plt.grid(axis='y', linestyle='--', lw=0.5)
-    plt.ylim(bottom=0)
+    plt.ylim(bottom=0, top=25)
     plt.legend()
 
 
@@ -77,16 +77,14 @@ def displacement(i, numbers, width=0.25):
     """
     return np.linspace(start=-width, stop=width, num=numbers)[i-1]
 
+
 def main(source_dir):
     lines_stats = {}
     pieces_stats = {}
-    params = []
     (_, _, files) = os.walk(source_dir).__next__()
     for file in files:
-        print(file)
         path = os.path.join(source_dir, file)
         if is_csv(path):
-            print(True)
             try:
                 alpha, gamma = find_model_type(file)
             except ValueError:

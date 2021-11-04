@@ -5,7 +5,7 @@ import csv
 import numpy as np
 import pandas as pd
 
-source_dir = r"C:\Users\xande\OneDrive\Documenten\KULeuven\ReinforcementLearning\RLData\MC_exfourer_AS_results\Results"
+source_dir = r"C:\Users\xande\OneDrive\Documenten\KULeuven\ReinforcementLearning\RLData\MC_fourer_SV_results\Results"
 
 
 def is_csv(filepath) -> bool:
@@ -60,7 +60,7 @@ def quantile_plot(stats: dict, xlabel, ylabel):
         i += 1
     plt.xticks(range(len(gamma_values)), gamma_values)
     plt.grid(axis='y', linestyle='--', lw=0.5)
-    plt.ylim(bottom=0)
+    plt.ylim(bottom=0, top=25)
     plt.legend()
 
 
@@ -74,6 +74,7 @@ def displacement(i, numbers, width=0.2):
     """
     return np.linspace(start=-width, stop=width, num=numbers)[i-1]
 
+
 def main(source_dir):
     lines_stats = {}
     pieces_stats = {}
@@ -83,11 +84,7 @@ def main(source_dir):
         print(file)
         path = os.path.join(source_dir, file)
         if is_csv(path):
-            print(True)
-            try:
-                visit, gamma = find_model_type(file)
-            except ValueError:
-                raise ValueError
+            visit, gamma = find_model_type(file)
 
             if True:
                 data = pd.read_csv(path)
@@ -99,9 +96,6 @@ def main(source_dir):
                 lines_stats.update({(visit, gamma): (mean["Lines_cleared"] - quantiles["Lines_cleared"][0.25],
                                                      mean["Lines_cleared"],
                                                      quantiles["Lines_cleared"][0.75] - mean["Lines_cleared"])})
-    print(lines_stats)
-    lines_stats.update({(False, 0.95): (5.5, 10.5, 3.5)})
-    pieces_stats.update({(False, 0.95): (28, 70, 12)})
     plt.figure(1)
     quantile_plot(lines_stats, "Alpha", "Lines cleared")
     plt.figure(2)
