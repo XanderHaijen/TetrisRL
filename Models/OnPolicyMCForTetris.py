@@ -53,63 +53,69 @@ class OnPolicyMCForTetris(StateValueModel):
         if self.first_visit:  # first-visit MC control
             self.C = {}  # initialize self.C(s,a)
 
-            for episode in range(1, nb_episodes + 1):
-                # start the new episode
-                state = self.env.reset()
-                visited_pairs = set()  # set of every (s,a) visited in the episode
+        for episode in range(1, nb_episodes + 1):
+            # start the new episode
+            state = self.env.reset()
+            ext_state = (state, self.env.get_falling_piece())
+            visited_pairs = set()  # set of every (s,a) visited in the episode
 
-                if state not in self.Q:
-                    self.Q.update({state: {}})
+            # Take first action
+            action = self._epsilon_greedy_action(learning_rate, episode + start_episode, ext_state)
 
-                # Take first action
-                action = self._epsilon_greedy_action(learning_rate, episode + start_episode, state)
-                done = False
+            # play entire episode
+            total_return = 0
+            done = False
+            while not done:
+                old_ext_state = ext_state  # save old state s
+                old_action = action  # save old action a
+                state, reward, done, obs = self.env.step(action)  # take action a, observe s', R_(t+1)
+                piece = self.env.get_falling_piece()
 
-                # play entire episode
-                total_return = 0
-                while not done:
-                    old_state = state  # save old state s
-                    old_action = action  # save old action a
-                    state, reward, done, obs = self.env.step(action)  # take action a, observe s', R_(t+1)
+                if piece is not None:
+                    ext_state = (state, piece)
                     total_return = self.gamma * total_return + reward
-                    if not self.first_visit or (old_state, old_action) not in visited_pairs:
+                    if not self.first_visit or (old_ext_state, old_action) not in visited_pairs:
 
                         # collect Q(s,a)
-                        if old_state not in self.Q.keys():
-                            self.Q.update({old_state: {}})
-                        return_so_far = self.Q[old_state].get(old_action, 0)
+                        if old_ext_state not in self.Q.keys():
+                            self.Q.update({old_ext_state: {}})
+                        return_so_far = self.Q[old_ext_state].get(old_action, 0)
 
                         # Collect self.C(s,a) and update
-                        if old_state not in self.C.keys():
-                            self.C.update({old_state: {}})
+                        if old_ext_state not in self.C.keys():
+                            self.C.update({old_ext_state: {}})
                             cumulative = 1
-                            self.C[old_state].update({old_action: 1})
-                        elif old_action not in self.C[old_state].keys():
+                            self.C[old_ext_state].update({old_action: 1})
+                        elif old_action not in self.C[old_ext_state].keys():
                             cumulative = 1
-                            self.C[old_state].update({old_action: 1})
+                            self.C[old_ext_state].update({old_action: 1})
                         else:
-                            self.C[old_state][old_action] += 1
-                            cumulative = self.C[old_state][old_action]
+                            self.C[old_ext_state][old_action] += 1
+                            cumulative = self.C[old_ext_state][old_action]
 
                         # compute new value for Q(s,a) and store in Q
                         return_so_far = return_so_far + (total_return - return_so_far) / cumulative
-                        self.Q[old_state].update({old_action: return_so_far})
-                    visited_pairs.add((old_state, old_action))
+                        self.Q[old_ext_state].update({old_action: return_so_far})
+                    visited_pairs.add((old_ext_state, old_action))
+                    action = self._epsilon_greedy_action(learning_rate, episode + start_episode, ext_state)
 
-                # After episode: update value function
-                visited_states = {state for state, action in visited_pairs}
-                for visited_state in visited_states:
-                    if visited_state not in self.value_function.keys():
-                        self.value_function.update({visited_state: self.Q[visited_state]})
-                    else:
-                        self.value_function[visited_state].update(self.Q[visited_state])
+                else:  # if piece is None, take no-action
+                    action = self.env.no_move
 
-    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes: int, state):
+            # After episode: update value function
+            visited_states = {state for state, action in visited_pairs}
+            for visited_state in visited_states:
+                if visited_state not in self.value_function.keys():
+                    self.value_function.update({visited_state: self.Q[visited_state]})
+                else:
+                    self.value_function[visited_state].update(self.Q[visited_state])
+
+    def _epsilon_greedy_action(self, learning_rate: Callable[[int], float], nb_episodes: int, ext_state):
         epsilon = learning_rate(nb_episodes)
         if random.random() <= epsilon:
             return self.env.action_space.sample()
         else:
-            return self.predict(state)
+            return self.predict(ext_state)
 
     def predict(self, state):
         values_for_state = self.value_function.get(state, {})
