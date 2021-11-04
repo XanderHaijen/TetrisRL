@@ -22,10 +22,10 @@ gamma_values = [0.7]
 lambda_values = [1, 0.95, 0.9, 0.8]
 
 # With a given type of traces
-traces_values = ["accumulating", "dutch", "replacing"]
+traces_values = ["accumulating"]
 
 # On a predefined board size
-size = "fourer"
+size = "extended fourer"
 env = TetrisEnv(type=size)
 
 

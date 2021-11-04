@@ -7,7 +7,7 @@ import sys
 sys.path.append("/data/leuven/343/vsc34339/RLP")
 
 from Evaluation.train_and_test import train_and_test
-from Models.OnPolicyMCAfterstates import OnPolicyMCAfterstates
+from Models.OnPolicyMCForTetris import OnPolicyMCForTetris
 from tetris_environment.tetris_env import TetrisEnv
 
 path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/MonteCarloExFourer"
@@ -19,11 +19,11 @@ visit = [True, False]
 args = list()
 for gamma in gamma_values:
     for first_visit in visit:
-        args.append(OnPolicyMCAfterstates(TetrisEnv(type='extended fourer', render=False),
+        args.append(OnPolicyMCForTetris(TetrisEnv(type='fourer', render=False),
                                           gamma=gamma, first_visit=first_visit))
 
 
-def main(model: OnPolicyMCAfterstates) -> str:
+def main(model: OnPolicyMCForTetris) -> str:
 
     def epsilon(x: int) -> float:
         return 0.001
@@ -56,6 +56,5 @@ def main(model: OnPolicyMCAfterstates) -> str:
 
 if __name__ == '__main__':
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = [executor.submit(main, func_arg) for func_arg in args]
-        for fs in concurrent.futures.as_completed(results):
-            print(fs.result())
+        for result in executor.map(main, args):
+            print(result)

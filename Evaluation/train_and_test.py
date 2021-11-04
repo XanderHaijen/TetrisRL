@@ -106,7 +106,6 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
     path = os.path.join(metrics_dir, "lines_plot.jpg")
     top_err = list(dataframe["Lines upper quantile"] - dataframe["Lines mean"])
     low_err = list(dataframe["Lines mean"] - dataframe["Lines lower quantile"])
-    print(top_err)
     Evaluate_policy.plot_with_errors(dataframe["Episodes trained"], dataframe["Lines mean"],
                                      (low_err, top_err), "average lines cleared", path, j)
 
