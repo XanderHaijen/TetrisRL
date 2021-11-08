@@ -12,7 +12,7 @@ from tetris_environment.tetris_env import TetrisEnv
 
 args = []
 
-path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaLambda/acc_traces"
+path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaLambda_AS_exfourer"
 # path_to_data_dir = r"D:\Bibliotheken\Downloads"
 
 
@@ -22,10 +22,10 @@ gamma_values = [0.7]
 lambda_values = [1, 0.95, 0.9, 0.8]
 
 # With a given type of traces
-traces_values = ["accumulating", 'replacing', 'dutch']
+traces_values = ["accumulating"]
 
 # On a predefined board size
-size = "fourer"
+size = "extended fourer"
 env = TetrisEnv(type=size)
 
 

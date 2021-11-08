@@ -1,7 +1,7 @@
 import pickle
 from typing import Callable
 import random
-from Models.StateValueModel import StateValueModel
+from Models.StateActionModel import StateValueModel
 from tetris_environment.tetris_env import TetrisEnv
 
 

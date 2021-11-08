@@ -12,28 +12,14 @@ from tetris_environment.tetris_env import TetrisEnv
 
 args = []
 
-path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaLambda/acc_traces"
-# path_to_data_dir = r"D:\Bibliotheken\Downloads"
-
-
-# This file will train and test several combinations of alpha, gamma and lambda
-alpha_values = [0.1]
-gamma_values = [0.7]
-lambda_values = [1, 0.95, 0.9, 0.8]
-
-# With a given type of traces
-traces_values = ["accumulating"]
+path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaLambda/"
 
 # On a predefined board size
 size = "extended fourer"
 env = TetrisEnv(type=size)
 
-
-for alpha in alpha_values:
-    for gamma in gamma_values:
-        for Lambda in lambda_values:
-            for traces in traces_values:
-                args.append(SarsaLambdaAfterstates(env, Lambda, alpha, gamma, traces))
+args.append(SarsaLambdaAfterstates(env, 0.8, 0.1, 0.7, "replacing"))
+args.append(SarsaLambdaAfterstates(env, 0.9, 0.1, 0.7, "replacing"))
 
 
 # trained simultaneously with concurrent.futures

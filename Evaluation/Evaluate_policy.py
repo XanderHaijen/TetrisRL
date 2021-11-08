@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from Models.AfterstateModel import AfterstateModel
-from Models.StateValueModel import StateValueModel
+from Models.StateActionModel import StateValueModel
 from gym import Env
 
 

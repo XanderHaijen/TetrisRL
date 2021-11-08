@@ -1,7 +1,7 @@
 import time
 
 from Models.AfterstateModel import AfterstateModel
-from Models.StateValueModel import StateValueModel
+from Models.StateActionModel import StateValueModel
 from tetris_environment.tetris_env import TetrisEnv
 
 
