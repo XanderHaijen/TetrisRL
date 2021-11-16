@@ -5,7 +5,7 @@ import csv
 import numpy as np
 import pandas as pd
 
-source_dir = r"C:\Users\xande\OneDrive\Documenten\KULeuven\ReinforcementLearning\RLData\MC_fourer_SV_results\Results"
+source_dir = r"C:\Users\xande\OneDrive\Documenten\KULeuven\ReinforcementLearning\RLData\MC_fourer_AS_results\Results"
 
 
 def is_csv(filepath) -> bool:
@@ -60,7 +60,6 @@ def quantile_plot(stats: dict, xlabel, ylabel):
         i += 1
     plt.xticks(range(len(gamma_values)), gamma_values)
     plt.grid(axis='y', linestyle='--', lw=0.5)
-    plt.ylim(bottom=0, top=25)
     plt.legend()
 
 

@@ -10,7 +10,8 @@ class SarsaLambdaAfterstates(AfterstateModel):
                  env: TetrisEnv,
                  Lambda: float, alpha: float, gamma: float,
                  traces: str,
-                 value_function: dict = None, eligibility: dict = None):
+                 value_function: dict = None, eligibility: dict = None,
+                 learned_games: int = 0):
         """
         Initializes a sarsa-control model with a Tetris environment
         :param Lambda: determines the amount of bootstrapping.
@@ -18,8 +19,11 @@ class SarsaLambdaAfterstates(AfterstateModel):
         :param alpha: step-size parameter in the update rule
         :param gamma: parameter in the update rule
         :param traces: Either accumulating, dutch, replacing. Specifies the update rule for eligibility traces
-        :param value_function: a dict of dicts containing the value for each state-action pair. If none is provided
-        it is initialized as Q(s,a) = 0 for all s, a
+        :param learned_games: the number of games the agent already learned.
+        :param value_function: a dict containing the value for each state. If none is provided
+        it is initialized as Q(s) = 0 for all s
+        :param eligibility: a dict containing the eligibility traces for all states. If none is provided,
+        it is initialized as E(s) = 0 for all s
         """
         super().__init__(env)
 
@@ -43,18 +47,23 @@ class SarsaLambdaAfterstates(AfterstateModel):
 
         self.eligibility = eligibility  # E(s,a) = 0 for all s,a
 
+        if learned_games < 0:
+            raise RuntimeError("Learned games should be greater than or equal to zero.")
+        self.learned_episodes = learned_games  # zero by default
+
     def train(self, learning_rate: Callable[[int], float], nb_episodes: int = 1000, start_episode: int = 0) -> None:
         """
         Predicts the value function and updates the epsilon-greedy policy according to the Sarsa(lambda) model
         (Sutton & Barto, section 7.5) using an afterstate value function
         :param learning_rate: = epsilon. A function of the number of episodes which goes to zero in the limit
         :param nb_episodes: the duration of one ´´training session´´
-        :param start_episode: zero in the beginnen, greater than zero when training an already partially trained agent
+        :param start_episode: zero in the beginning, greater than zero when training an already partially trained agent
         :return: None
         """
         # NOTE: eligibility traces will reset to 0 when their value is less than MIN_ELEG
         MIN_ELEG = 0.01
         for episode in range(1, nb_episodes + 1):
+            self.learned_episodes += 1
             state = self.env.reset()
             afterstate, actions = self._epsilon_greedy_actions(learning_rate, episode + start_episode)
 
@@ -107,6 +116,8 @@ class SarsaLambdaAfterstates(AfterstateModel):
                     if abs(self.eligibility[s]) < MIN_ELEG:
                         self.eligibility.pop(s)
 
+        self.learned_episodes += nb_episodes
+
     def _epsilon_greedy_actions(self, learning_rate: Callable[[int], float], nb_episodes: int) -> Tuple[tuple, list]:
         """
         :param nb_episodes: how far into learning is the agent
@@ -150,15 +161,15 @@ class SarsaLambdaAfterstates(AfterstateModel):
 
     @staticmethod
     def load(filename: str, rendering: bool = False) -> AfterstateModel:
-        gamma, alpha, Lambda, value_function, eligibility, traces, size = SarsaLambdaAfterstates._load_file(filename)
+        gamma, alpha, Lambda, value_function, eligibility, traces, size, learned_eps = SarsaLambdaAfterstates._load_file(filename)
         env = TetrisEnv(type=size, render=rendering)
-        return SarsaLambdaAfterstates(env, Lambda, alpha, gamma, traces, value_function, eligibility)
+        return SarsaLambdaAfterstates(env, Lambda, alpha, gamma, traces, value_function, eligibility, learned_eps)
 
     def save(self, filename: str) -> None:
         with open(filename, 'wb') as f:
             pickle.dump((self.gamma, self.alpha, self.Lambda,
                          self.value_function, self.eligibility, self.traces,
-                         self.env.type),
+                         self.env.type, self.learned_episodes),
                         f)
             f.close()
 
