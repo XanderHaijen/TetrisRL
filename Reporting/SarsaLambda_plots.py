@@ -9,7 +9,7 @@ import csv
 import numpy as np
 import pandas as pd
 
-source_dir = r"C:\Users\xande\OneDrive\Documenten\KULeuven\ReinforcementLearning\RLData\SarsaLambda_fourer_SV_results\Results"
+source_dir = r"C:\Users\xande\OneDrive\Documenten\KULeuven\ReinforcementLearning\RLData\SarsaLambda_exfourer_AS_results\Results"
 
 
 def is_csv(filepath) -> bool:
@@ -65,7 +65,7 @@ def quantile_plot(stats: dict, xlabel, ylabel):
         i += 1
     plt.xticks(range(len(lambda_values)), lambda_values)
     plt.grid(axis='y', linestyle='--', lw=0.5)
-    plt.ylim(top=25, bottom=0)
+    plt.ylim(bottom=0)
     plt.legend()
 
 

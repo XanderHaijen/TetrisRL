@@ -17,7 +17,7 @@ def evaluate_policy_afterstates(algorithm: AfterstateModel, env: Env, nb_episode
     """
 
     # metrics will be constructed as a list of dicts, then converted to pandas dataframe for analysis
-    # one dict will contain nb_pieces, score and lines_cleared
+    # one dict will contain nb_lines, score and lines_cleared
 
     metrics = []
     for episode in range(1, nb_episodes + 1):
@@ -51,7 +51,7 @@ def evaluate_policy_state_action(algorithm: StateValueModel, env: Env, nb_episod
     """
 
     # metrics will be constructed as a list of dicts, then converted to pandas dataframe for analysis
-    # one dict will contain nb_pieces, score and lines_cleared
+    # one dict will contain nb_lines, score and lines_cleared
 
     metrics = []
     for episode in range(1, nb_episodes + 1):

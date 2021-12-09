@@ -16,13 +16,13 @@ def on_policy_mc_test(first_visit: bool, training_batch_size: int = 1000, nb_bat
         episodes_trained += training_batch_size
         metric = evaluate_policy_afterstates(model, model.env, 50)
         episodes.append(episodes_trained)
-        scores.append((metric.mean()['Score'], metric.var()['Score']))
-        nbs_pieces.append((metric.mean()['Nb_pieces'], metric.var()['Nb_pieces']))
+        scores.append((metric.mean()['Score'], metric.lower_q()['Score']))
+        nbs_pieces.append((metric.mean()['Nb_pieces'], metric.lower_q()['Nb_pieces']))
 
     model.save(r"D:\Bibliotheken\Downloads\MC.pickle")
 
     plt.plot(episodes, [data[0] for data in scores], 'r', episodes, [data[0] for data in nbs_pieces], 'b')
-    plt.ylabel('Average score / nb_pieces')
+    plt.ylabel('Average score / nb_lines')
     plt.xlabel('nb episodes trained')
     plt.savefig(r"D:\Bibliotheken\Downloads\plot.png", dpi=300, bbox_inches='tight')
     plt.close()

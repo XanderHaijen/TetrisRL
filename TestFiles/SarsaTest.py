@@ -13,7 +13,7 @@ def sarsa_zero_test():
         print(f"Evaluation round {i + 1}")
         metrics = Evaluate_policy.evaluate_policy_afterstates(model, model.env, nb_episodes=50)
         print(metrics.mean())
-        print(metrics.var())
+        print(metrics.lower_q())
     model.save(r"D:\Bibliotheken\Downloads\model.pickle")
 
 
