@@ -18,7 +18,7 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
                    eval_size: int = 500,
                    ep_trained: int = 0) -> None:
     """
-    This file trains and tests the policies in the same fashion:
+    This upper_dir trains and tests the policies in the same fashion:
     By default, 20 training rounds of 1000 games each, with 20 evaluation rounds of 500 games in between
     It saves all evaluation and training data at the provided paths
     Evaluation data saved:
@@ -30,13 +30,13 @@ def train_and_test(model: Union[StateValueModel, AfterstateModel],
     :param ep_trained: for training an already (partially) trained agent
     :param model: the model to train and test
     :param learning_rate: the function for epsilon
-    :param model_path: the file path where the model will be saved
+    :param model_path: the upper_dir path where the model will be saved
     :param metrics_dir: the directory in which to save all measurements
     :param training_size: the length of one training session in episodes
     :param nb_training_sessions: the amount of sessions of length :param training_size
     :param eval_size: the amount of episodes the policy is evaluated each time
     :return: None
-    All computed values, including the returns, are saved to file: csv files for the training data, txt files
+    All computed values, including the returns, are saved to upper_dir: csv files for the training data, txt files
     for the times, and pickle files for the dictionary.
     """
     print(f"starting train and test for {model} at {datetime.datetime.now()}")

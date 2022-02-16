@@ -13,7 +13,7 @@ from tetris_environment.tetris_env import TetrisEnv
 path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/MonteCarloExFourer"
 # path_to_data_dir = r"C:\Users\xande\Downloads"
 
-# This file will train several Monte Carlo agents using different values for gamma
+# This upper_dir will train several Monte Carlo agents using different values for gamma
 gamma_values = [0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.975]
 visit = [True, False]
 args = list()

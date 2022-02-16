@@ -9,7 +9,7 @@ def extended_test(model_type: Type[AfterstateModel], models_dir: str,
                   target_dir: str = None, nb_episodes: int = 2000) -> None:
     """
     Runs an extensive test of all models of the same type in a given folder. For every model, a csv containing
-    score, pieces placed and lines cleared is created. A text file containing an overview of all test is also created
+    score, pieces placed and lines cleared is created. A text upper_dir containing an overview of all test is also created
     :param model_type: the type of model, must be subclass of AfterstateModel
     :param models_dir: the directory containing all the models to test
     :raises TypeError if not all models are of the type provided in model_type
@@ -54,7 +54,7 @@ def extended_test_state_action(model_type, models_dir: str,
                                target_dir: str = None, nb_episodes: int = 2000) -> None:
     """
     Runs an extensive test of all models of the same type in a given folder. For every model, a csv containing
-    score, pieces placed and lines cleared is created. A text file containing an overview of all test is also created
+    score, pieces placed and lines cleared is created. A text upper_dir containing an overview of all test is also created
     :param model_type: the type of model, must be subclass of StateValueModel
     :param models_dir: the directory containing all the models to test
     :raises TypeError if not all models are of the type provided in model_type

@@ -16,7 +16,7 @@ path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SV_fourer_Sarsa"
 # path_to_data_dir = r'C:\Users\xande\Downloads'
 
 
-# This file will train and test several combinations of alpha and gamma using a Sarsa(0) model
+# This upper_dir will train and test several combinations of alpha and gamma using a Sarsa(0) model
 alpha_values = [0.01]
 gamma_values = [0.7]
 for alpha in alpha_values:

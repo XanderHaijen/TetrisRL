@@ -16,7 +16,7 @@ path_to_data_dir = "/scratch/leuven/343/vsc34339/RLData/SarsaLambda_AS_exfourer"
 # path_to_data_dir = r"D:\Bibliotheken\Downloads"
 
 
-# This file will train and test several combinations of alpha, gamma and lambda
+# This upper_dir will train and test several combinations of alpha, gamma and lambda
 alpha_values = [0.1]
 gamma_values = [0.7]
 lambda_values = [1, 0.95, 0.9, 0.8]
